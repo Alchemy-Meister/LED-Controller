@@ -115,28 +115,17 @@
 
         private void InitializeSerialPort()
         {
-            var searcher = new System.Management.ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE ConfigManagerErrorCode = 0");
-            try
+            serialPortNumber = deviceSerialPort();
+            if(serialPortNumber != -1)
             {
-                foreach (var port in searcher.Get())
-                {
-                    string caption = port["Caption"].ToString();
-                    if (caption.Contains("USB-SERIAL CH340 (COM"))
-                    {
-                        int startIndex = caption.IndexOf("COM");
-                        int endIndex = caption.LastIndexOf(")");
-                        string comPort = caption.Substring(startIndex, endIndex - startIndex);
-                        this.textBox1.AppendText(comPort);
-                        this.serialPort = new System.IO.Ports.SerialPort(comPort, 9600);
-                        this.serialPort.ReadTimeout = 500;
-                        if (!this.serialPort.IsOpen)
-                        {
-                            serialPort.Open();
-                        }
-                    }
-                }
+                processDeviceConnection();
+                System.Console.WriteLine("Connection Test 1");
             }
-            catch (System.Management.ManagementException) { }
+            else
+            {
+                processDeviceDisconnection();
+                System.Console.WriteLine("Disconnection Test 1");
+            } 
         }
 
         #endregion

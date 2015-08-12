@@ -26,8 +26,9 @@ namespace LED_Controller
         private const int DBT_DEVTYP_PORT = 0x00000003;             // serial, parallel  
 
         private const Int16 BAUDRATE = 9600;
+        private const string DEVICE_NAME = "USB-SERIAL CH340 (COM";
 
-        private const string deviceFriendlyName = "USB-SERIAL CH340 (COM";
+        private bool deviceConnected = false;
 
         private deviceSerialPortDelegate mDeleg;
         private int serialPortNumber;
@@ -160,23 +161,27 @@ namespace LED_Controller
             // Project -> Add Reference -> .Net tab, choose System.Management  
             ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2",
                 "Select Name from Win32_PnpEntity where ClassGuid=\"{4d36e978-e325-11ce-bfc1-08002be10318}\"");
-            bool found = false;
-            ManagementObject[] deviceArray = new ManagementObject[searcher.Get().Count];
-            searcher.Get().CopyTo(deviceArray, 0);
-            for (int index = 0; !found && index < deviceArray.Length; index++)
+            int length = searcher.Get().Count;
+            if (length > 0)
             {
-                string name = deviceArray[index].GetPropertyValue("Name").ToString();
-
-                // Checks if the current device is the desired. 
-                if (name.Contains(deviceFriendlyName))
+                ManagementObject[] deviceArray = new ManagementObject[searcher.Get().Count];
+                searcher.Get().CopyTo(deviceArray, 0);
+                bool found = false;
+                for (int index = 0; !found && index < deviceArray.Length; index++)
                 {
-                    found = true;
-                    short startIndex = (short) (name.LastIndexOf("M") + 1);
-                    int endIndex = name.LastIndexOf(")");
-                    comPort = Convert.ToInt16(name.Substring(startIndex, endIndex - startIndex));
+                    string name = deviceArray[index].GetPropertyValue("Name").ToString();
+
+                    // Checks if the current device is the desired. 
+                    if (name.Contains(DEVICE_NAME))
+                    {
+                        found = true;
+                        short startIndex = (short) (name.LastIndexOf("M") + 1);
+                        short endIndex = (short) name.LastIndexOf(")");
+                        comPort = Convert.ToInt16(name.Substring(startIndex, endIndex - startIndex));
+                    }
                 }
+                searcher.Dispose();
             }
-            searcher.Dispose();
             return comPort;
         }
 
@@ -186,28 +191,50 @@ namespace LED_Controller
         // callback method when the thread returns  
         private void deviceConnectedCallback(IAsyncResult ar)
         {
-            // got the returned arrayList, now we can do whatever with it  
+            // got the Serial Port number.  
             serialPortNumber = mDeleg.EndInvoke(ar);
-            if(serialPortNumber != -1)
+            if (serialPortNumber != -1 && !deviceConnected)
             {
-                serialPort = new SerialPort("COM" + serialPortNumber, BAUDRATE);
-                serialPort.Open();
-                redTrackBar.Enabled = true;
-                greenTrackBar.Enabled = true;
-                blueTrackBar.Enabled = true;
+                processDeviceConnection();
             }
         }
 
+        // callback method when the thread returns
         private void deviceDisconnectedCallback(IAsyncResult ar)
         {
+            // got the Serial Port number.
             serialPortNumber = mDeleg.EndInvoke(ar);
-            if(serialPortNumber == -1)
+            if (serialPortNumber == -1)
             {
-                serialPort.Close();
-                redTrackBar.Enabled = false;
-                greenTrackBar.Enabled = false;
-                blueTrackBar.Enabled = false;     
+                processDeviceDisconnection();
             }
-        } 
+        }
+
+        private void processDeviceConnection()
+        {
+            Console.WriteLine("Connection Test 2");
+            textBox1.Text = "COM" + serialPortNumber;
+            serialPort = new SerialPort("COM" + serialPortNumber, BAUDRATE);
+            serialPort.ReadTimeout = 500;
+            serialPort.WriteTimeout = 500;
+            if (!serialPort.IsOpen)
+            {
+                serialPort.Open();
+            }
+            deviceConnected = true;
+            redTrackBar.Enabled = true;
+            greenTrackBar.Enabled = true;
+            blueTrackBar.Enabled = true;
+        }
+
+        private void processDeviceDisconnection()
+        {
+            Console.WriteLine("Disconnection Test 2");
+            textBox1.Clear();
+            deviceConnected = false;
+            redTrackBar.Enabled = false;
+            greenTrackBar.Enabled = false;
+            blueTrackBar.Enabled = false;
+        }
     }
 }
