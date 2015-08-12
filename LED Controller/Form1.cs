@@ -185,7 +185,7 @@ namespace LED_Controller
             return comPort;
         }
 
-        // delegate wrapper function for the getFriendlyNameList function  
+        // delegate wrapper function for the deviceSerialPort function  
         private delegate short deviceSerialPortDelegate();
 
         // callback method when the thread returns  
@@ -195,7 +195,7 @@ namespace LED_Controller
             serialPortNumber = mDeleg.EndInvoke(ar);
             if (serialPortNumber != -1 && !deviceConnected)
             {
-                processDeviceConnection();
+                connectionUpdateGUI();
             }
         }
 
@@ -206,7 +206,7 @@ namespace LED_Controller
             serialPortNumber = mDeleg.EndInvoke(ar);
             if (serialPortNumber == -1)
             {
-                processDeviceDisconnection();
+                disconnectionUpdateGUI();
             }
         }
 
@@ -230,11 +230,35 @@ namespace LED_Controller
         private void processDeviceDisconnection()
         {
             Console.WriteLine("Disconnection Test 2");
-            textBox1.Clear();
+            textBox1.Text = "";
             deviceConnected = false;
             redTrackBar.Enabled = false;
             greenTrackBar.Enabled = false;
             blueTrackBar.Enabled = false;
+        }
+
+        public void connectionUpdateGUI()
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new MethodInvoker(() => connectionUpdateGUI()));
+            }
+            else
+            {
+                processDeviceConnection();
+            }
+        }
+
+        public void disconnectionUpdateGUI()
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new MethodInvoker(() => disconnectionUpdateGUI()));
+            }
+            else
+            {
+                processDeviceDisconnection();
+            }
         }
     }
 }
