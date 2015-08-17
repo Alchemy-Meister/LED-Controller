@@ -18,6 +18,7 @@
                 components.Dispose();
             }
             base.Dispose(disposing);
+            UsbNotification.UnregisterUsbDeviceNotification();
         }
 
         #region Windows Form Designer generated code
@@ -55,8 +56,10 @@
             this.textBox1.Location = new System.Drawing.Point(12, 12);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
+            this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(373, 213);
             this.textBox1.TabIndex = 1;
+            this.textBox1.TabStop = false;
             // 
             // greenTrackBar
             // 
@@ -118,13 +121,14 @@
             serialPortNumber = deviceSerialPort();
             if(serialPortNumber != -1)
             {
-                processDeviceConnection();
-                System.Console.WriteLine("Connection Test 1");
+                deviceConnected = true;
+                prepareSerialPort();
+                processDeviceConnectionGUI();
             }
             else
             {
-                processDeviceDisconnection();
-                System.Console.WriteLine("Disconnection Test 1");
+                deviceConnected = false;
+                processDeviceDisconnectionGUI();
             } 
         }
 
