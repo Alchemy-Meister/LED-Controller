@@ -42,12 +42,20 @@ namespace LED_Controller
 
         public MainWindow()
         {
-            mDeleg = new deviceSerialPortDelegate(deviceSerialPort);
-            Closing += MainWindow_Closing;
-            InitializeComponent();
-            InitializeTray();
-            InitializeSerialPort();
-            
+            if (System.Diagnostics.Process.GetProcessesByName(
+                System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetEntryAssembly().Location)).Count() > 1)
+            {
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
+            }
+            else
+            {
+                mDeleg = new deviceSerialPortDelegate(deviceSerialPort);
+                Closing += MainWindow_Closing;
+                StateChanged += Window_StateChanged;
+                InitializeComponent();
+                InitializeTray();
+                InitializeSerialPort();
+            }
         }
 
         private void InitializeTray()
@@ -75,6 +83,11 @@ namespace LED_Controller
             if(me != null && me.Button != MouseButtons.Right)
             {
                 App.Current.MainWindow.Visibility = Visibility.Visible;
+                this.ShowInTaskbar = true;
+                if (WindowState == WindowState.Minimized)
+                {
+                    WindowState = WindowState.Normal;
+                }
                 nIcon.Visible = false;
             }
         }
@@ -102,11 +115,22 @@ namespace LED_Controller
             }
         }
 
-        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        protected void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             e.Cancel = true;
             App.Current.MainWindow.Visibility = Visibility.Hidden;
             nIcon.Visible = true;
+        }
+
+        protected void Window_StateChanged(object sender, EventArgs e)
+        {
+            if (this.WindowState == WindowState.Minimized)
+            {
+                App.Current.MainWindow.Visibility = Visibility.Hidden;
+                this.WindowState = WindowState.Normal;
+                nIcon.Visible = true;
+
+            }
         }
 
         /// <summary>
