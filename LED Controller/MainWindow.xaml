@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:LED_Controller"
         mc:Ignorable="d"
         Title="Led Controller" Height="165.073" Width="322.948">
+
     <Grid Margin="0,0,0.209,0.178">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>

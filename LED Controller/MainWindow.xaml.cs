@@ -16,6 +16,9 @@ using System.IO.Ports;
 using System.Threading;
 using System.Management;
 using System.Windows.Interop;
+using System.Windows.Forms;
+using System.Drawing;
+using System.IO;
 
 namespace LED_Controller
 {
@@ -35,11 +38,39 @@ namespace LED_Controller
 
         private SerialPort serialPort;
 
+        private NotifyIcon nIcon;
+
         public MainWindow()
         {
             mDeleg = new deviceSerialPortDelegate(deviceSerialPort);
             InitializeComponent();
+            InitializeTray();
             InitializeSerialPort();
+            
+        }
+
+        private void InitializeTray()
+        {
+            nIcon = new NotifyIcon()
+            {
+                ContextMenuStrip = new ContextMenuStrip(),
+                Icon = new Icon(System.Windows.Application.GetResourceStream(
+                new Uri("pack://application:,,,/LED Controller;component/resources/favicon.ico")).Stream)
+            };
+            System.Windows.Forms.MenuItem exit = new System.Windows.Forms.MenuItem();
+            exit.Index = 0;
+            exit.Text = "Exit";
+            exit.Click += Exit_Click;
+            System.Windows.Forms.ContextMenu trayMenu = new System.Windows.Forms.ContextMenu();
+            trayMenu.MenuItems.AddRange(
+                    new System.Windows.Forms.MenuItem[] { exit });
+            nIcon.ContextMenu = trayMenu;
+        }
+
+        private void Exit_Click(object sender, EventArgs e)
+        {
+            UsbNotification.UnregisterUsbDeviceNotification();
+            App.Current.Shutdown();
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -58,8 +89,7 @@ namespace LED_Controller
 
         protected override void OnClosed(EventArgs e)
         {
-            base.OnClosed(e);
-            UsbNotification.UnregisterUsbDeviceNotification();
+            nIcon.Visible = true;   
         }
 
         /// <summary>
