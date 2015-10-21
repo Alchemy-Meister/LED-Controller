@@ -43,6 +43,7 @@ namespace LED_Controller
         public MainWindow()
         {
             mDeleg = new deviceSerialPortDelegate(deviceSerialPort);
+            Closing += MainWindow_Closing;
             InitializeComponent();
             InitializeTray();
             InitializeSerialPort();
@@ -65,11 +66,25 @@ namespace LED_Controller
             trayMenu.MenuItems.AddRange(
                     new System.Windows.Forms.MenuItem[] { exit });
             nIcon.ContextMenu = trayMenu;
+            nIcon.Click += NIcon_Click;
+        }
+
+        private void NIcon_Click(object sender, EventArgs e)
+        {
+            System.Windows.Forms.MouseEventArgs me = e as System.Windows.Forms.MouseEventArgs;
+            if(me != null && me.Button != MouseButtons.Right)
+            {
+                App.Current.MainWindow.Visibility = Visibility.Visible;
+                nIcon.Visible = false;
+            }
         }
 
         private void Exit_Click(object sender, EventArgs e)
         {
             UsbNotification.UnregisterUsbDeviceNotification();
+            nIcon.Icon = null;
+            nIcon.Visible = false;
+            base.OnClosed(e);
             App.Current.Shutdown();
         }
 
@@ -87,9 +102,11 @@ namespace LED_Controller
             }
         }
 
-        protected override void OnClosed(EventArgs e)
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            nIcon.Visible = true;   
+            e.Cancel = true;
+            App.Current.MainWindow.Visibility = Visibility.Hidden;
+            nIcon.Visible = true;
         }
 
         /// <summary>
