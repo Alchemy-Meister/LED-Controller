@@ -1,44 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.IO.Ports;
-using System.Threading;
-using System.Management;
-using System.Windows.Interop;
-using System.Windows.Forms;
-using System.Drawing;
-using System.IO;
-
-namespace LED_Controller
+﻿namespace LED_Controller
 {
+    using System;
+    using System.Drawing;
+    using System.Linq;
+    using System.Windows;
+    using System.Windows.Forms;
+    using System.Windows.Interop;
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        private MainWindowController controller;
 
-        private const Int16 BAUDRATE = 9600;
-        private const string DEVICE_NAME = "USB-SERIAL CH340 (COM";
+        private DeviceSerialPortDelegate deleg;
 
-        private bool deviceConnected = false;
+        private NotifyIcon notifyIcon;
 
-        private deviceSerialPortDelegate mDeleg;
-        private int serialPortNumber;
-
-        private SerialPort serialPort;
-
-        private NotifyIcon nIcon;
+        // Delegate wrapper function for the deviceSerialPort function
+        private delegate short DeviceSerialPortDelegate();
 
         public MainWindow()
         {
@@ -49,56 +30,14 @@ namespace LED_Controller
             }
             else
             {
-                mDeleg = new deviceSerialPortDelegate(deviceSerialPort);
-                Closing += MainWindow_Closing;
-                StateChanged += Window_StateChanged;
-                InitializeComponent();
-                InitializeTray();
-                InitializeSerialPort();
+                this.controller = new MainWindowController();
+                this.deleg = new DeviceSerialPortDelegate(this.controller.DeviceUpdatedSerialPort);
+                this.Closing += this.MainWindow_Closing;
+                this.StateChanged += this.Window_StateChanged;
+                this.InitializeComponent();
+                this.InitializeTray();
+                this.InitializeSerialPort();
             }
-        }
-
-        private void InitializeTray()
-        {
-            nIcon = new NotifyIcon()
-            {
-                ContextMenuStrip = new ContextMenuStrip(),
-                Icon = new Icon(System.Windows.Application.GetResourceStream(
-                new Uri("pack://application:,,,/LED Controller;component/resources/favicon.ico")).Stream)
-            };
-            System.Windows.Forms.MenuItem exit = new System.Windows.Forms.MenuItem();
-            exit.Index = 0;
-            exit.Text = "Exit";
-            exit.Click += Exit_Click;
-            System.Windows.Forms.ContextMenu trayMenu = new System.Windows.Forms.ContextMenu();
-            trayMenu.MenuItems.AddRange(
-                    new System.Windows.Forms.MenuItem[] { exit });
-            nIcon.ContextMenu = trayMenu;
-            nIcon.Click += NIcon_Click;
-        }
-
-        private void NIcon_Click(object sender, EventArgs e)
-        {
-            System.Windows.Forms.MouseEventArgs me = e as System.Windows.Forms.MouseEventArgs;
-            if(me != null && me.Button != MouseButtons.Right)
-            {
-                App.Current.MainWindow.Visibility = Visibility.Visible;
-                this.ShowInTaskbar = true;
-                if (WindowState == WindowState.Minimized)
-                {
-                    WindowState = WindowState.Normal;
-                }
-                nIcon.Visible = false;
-            }
-        }
-
-        private void Exit_Click(object sender, EventArgs e)
-        {
-            UsbNotification.UnregisterUsbDeviceNotification();
-            nIcon.Icon = null;
-            nIcon.Visible = false;
-            base.OnClosed(e);
-            App.Current.Shutdown();
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -110,26 +49,69 @@ namespace LED_Controller
             if (source != null)
             {
                 IntPtr windowHandle = source.Handle;
-                source.AddHook(HwndHandler);
+                source.AddHook(this.HwndHandler);
                 UsbNotification.RegisterUsbDeviceNotification(windowHandle);
             }
         }
 
-        protected void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void InitializeTray()
+        {
+            this.notifyIcon = new NotifyIcon()
+            {
+                ContextMenuStrip = new ContextMenuStrip(),
+                Icon = new Icon(System.Windows.Application.GetResourceStream(
+                new Uri("pack://application:,,,/LED Controller;component/resources/favicon.ico")).Stream)
+            };
+            MenuItem exit = new MenuItem();
+            exit.Index = 0;
+            exit.Text = "Exit";
+            exit.Click += this.Exit_Click;
+            ContextMenu trayMenu = new ContextMenu();
+            trayMenu.MenuItems.AddRange(
+                    new MenuItem[] { exit });
+            this.notifyIcon.ContextMenu = trayMenu;
+            this.notifyIcon.Click += this.NIcon_Click;
+        }
+
+        private void NIcon_Click(object sender, EventArgs e)
+        {
+            MouseEventArgs me = e as System.Windows.Forms.MouseEventArgs;
+            if (me != null && me.Button != MouseButtons.Right)
+            {
+                App.Current.MainWindow.Visibility = Visibility.Visible;
+                this.ShowInTaskbar = true;
+                if (this.WindowState == WindowState.Minimized)
+                {
+                    this.WindowState = WindowState.Normal;
+                }
+
+                this.notifyIcon.Visible = false;
+            }
+        }
+
+        private void Exit_Click(object sender, EventArgs e)
+        {
+            UsbNotification.UnregisterUsbDeviceNotification();
+            this.notifyIcon.Icon = null;
+            this.notifyIcon.Visible = false;
+            this.OnClosed(e);
+            App.Current.Shutdown();
+        }
+
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             e.Cancel = true;
             App.Current.MainWindow.Visibility = Visibility.Hidden;
-            nIcon.Visible = true;
+            this.notifyIcon.Visible = true;
         }
 
-        protected void Window_StateChanged(object sender, EventArgs e)
+        private void Window_StateChanged(object sender, EventArgs e)
         {
             if (this.WindowState == WindowState.Minimized)
             {
                 App.Current.MainWindow.Visibility = Visibility.Hidden;
                 this.WindowState = WindowState.Normal;
-                nIcon.Visible = true;
-
+                this.notifyIcon.Visible = true;
             }
         }
 
@@ -144,16 +126,16 @@ namespace LED_Controller
                 switch ((int)wparam)
                 {
                     case UsbNotification.DbtDevicearrival:
-                        callback = new AsyncCallback(deviceConnectedCallback);
+                        callback = new AsyncCallback(this.DeviceConnectedCallback);
 
                         // invoke the thread that will handle getting the serial port number.   
-                        mDeleg.BeginInvoke(callback, null);
+                        this.deleg.BeginInvoke(callback, null);
                         break;
                     case UsbNotification.DbtDeviceremovecomplete:
-                        callback = new AsyncCallback(deviceDisconnectedCallback);
+                        callback = new AsyncCallback(this.DeviceDisconnectedCallback);
 
                         // invoke the thread that will handle getting the serial port number.
-                        mDeleg.BeginInvoke(callback, null);
+                        this.deleg.BeginInvoke(callback, null);
                         break;
                 }
             }
@@ -164,118 +146,75 @@ namespace LED_Controller
 
         private void InitializeSerialPort()
         {
-            serialPortNumber = deviceSerialPort();
-            if (serialPortNumber != -1)
+            if (this.controller.DeviceUpdatedSerialPort() != -1)
             {
-                deviceConnected = true;
-                prepareSerialPort();
-                processDeviceConnectionGUI();
+                this.controller.InitializeSerialPort();
+                this.controller.OpenSerialPort();
+                this.ProcessDeviceConnectionGUI();
             }
             else
             {
-                deviceConnected = false;
-                processDeviceDisconnectionGUI();
+                this.ProcessDeviceDisconnectionGUI();
             }
         }
 
-        // delegate wrapper function for the deviceSerialPort function
-        private delegate short deviceSerialPortDelegate();
-
-        // function queries the system using WMI and returns the serial port number if the device 
-        //is connected to the system, -1 otherwise.   
-        private short deviceSerialPort()
+        // Callback method when the thread returns  
+        private void DeviceConnectedCallback(IAsyncResult ar)
         {
-            short comPort = -1;
-
-            // getting a list of all available com port devices and their friendly names     
-            // must add System.Management DLL resource to solution before using this     
-            // Project -> Add Reference -> .Net tab, choose System.Management  
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2",
-                "Select Name from Win32_PnpEntity where ClassGuid=\"{4d36e978-e325-11ce-bfc1-08002be10318}\"");
-            int length = searcher.Get().Count;
-            if (length > 0)
+            // Got the Serial Port number.  
+            short serialPortNumber = this.deleg.EndInvoke(ar);
+            
+            // Lock the Controller until critical zone is completed
+            lock (this.controller)
             {
-                ManagementObject[] deviceArray = new ManagementObject[searcher.Get().Count];
-                searcher.Get().CopyTo(deviceArray, 0);
-                bool found = false;
-                for (int index = 0; !found && index < deviceArray.Length; index++)
+                // CRITICAL ZONE since multiple device arrivals can be triggered 
+                // at the same time and could try to open the port multiple times
+                // raising an exception
+                if (serialPortNumber != -1 && !this.controller.IsSerialPortOpened())
                 {
-                    string name = deviceArray[index].GetPropertyValue("Name").ToString();
-
-                    // Checks if the current device is the desired. 
-                    if (name.Contains(DEVICE_NAME))
-                    {
-                        found = true;
-                        short startIndex = (short)(name.LastIndexOf("M") + 1);
-                        short endIndex = (short)name.LastIndexOf(")");
-                        comPort = Convert.ToInt16(name.Substring(startIndex, endIndex - startIndex));
-                    }
+                    // Opens the serial connection and updates the GUI on a safe thread.
+                    this.controller.InitializeSerialPort();
+                    this.controller.OpenSerialPort();
+                    this.SafeExecution(this.ProcessDeviceConnectionGUI);
                 }
-                searcher.Dispose();
-            }
-            return comPort;
-        }
-
-        // callback method when the thread returns  
-        private void deviceConnectedCallback(IAsyncResult ar)
-        {
-            // got the Serial Port number.  
-            serialPortNumber = mDeleg.EndInvoke(ar);
-            if (serialPortNumber != -1 && !deviceConnected)
-            {
-                //Opens the serial connection and updates the GUI on a safe thread.
-                deviceConnected = true;
-                prepareSerialPort();
-                safeExecution(processDeviceConnectionGUI);
             }
         }
 
-        // callback method when the thread returns
-        private void deviceDisconnectedCallback(IAsyncResult ar)
+        // Callback method when the thread returns
+        private void DeviceDisconnectedCallback(IAsyncResult ar)
         {
-            // got the Serial Port number.
-            serialPortNumber = mDeleg.EndInvoke(ar);
+            // Got the Serial Port number.
+            short serialPortNumber = this.deleg.EndInvoke(ar);
             if (serialPortNumber == -1)
             {
-                //Updates the GUI on a safe thread.
-                deviceConnected = false;
-                safeExecution(processDeviceDisconnectionGUI);
+                // Updates the GUI on a safe thread.
+                this.controller.CloseSerialPort();
+                this.SafeExecution(this.ProcessDeviceDisconnectionGUI);
             }
         }
 
-        private void prepareSerialPort()
+        // The function that opens the serial connection and updates de GUI according to the device connection.
+        private void ProcessDeviceConnectionGUI()
         {
-            serialPort = new SerialPort("COM" + serialPortNumber, BAUDRATE);
-            serialPort.ReadTimeout = 500;
-            serialPort.WriteTimeout = 500;
-            if (!serialPort.IsOpen)
-            {
-                serialPort.Open();
-            }
-        }
-
-        //The function that opens the serial connection and updates de GUI according to the device connection.
-        private void processDeviceConnectionGUI()
-        {
-            textBox.Text = "COM" + serialPortNumber;
+            textBox.Text = "COM" + this.controller.GetSerialPort();
             redSlider.IsEnabled = true;
             greenSlider.IsEnabled = true;
             blueSlider.IsEnabled = true;
             applyButton.IsEnabled = true;
         }
 
-        //Updates de GUI according to the device disconneciton.
-        private void processDeviceDisconnectionGUI()
+        // Updates de GUI according to the device disconneciton.
+        private void ProcessDeviceDisconnectionGUI()
         {
-            textBox.Text = "";
+            textBox.Text = string.Empty;
             redSlider.IsEnabled = false;
             greenSlider.IsEnabled = false;
             blueSlider.IsEnabled = false;
             applyButton.IsEnabled = false;
         }
 
-        //Execute action in the GUI thread.
-        public void safeExecution(Action action)
+        // Execute action in the GUI thread.
+        private void SafeExecution(Action action)
         {
             if (!this.Dispatcher.CheckAccess())
             {
@@ -287,76 +226,22 @@ namespace LED_Controller
             }
         }
 
-        private void redSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void RedSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (serialPort != null && serialPort.IsOpen)
-            {
-                try
-                {
-                    Byte[] command = new Byte[3];
-                    Byte value = (Byte)Math.Round(redSlider.Value * 2.55);
-                    command[0] = Convert.ToByte('R');
-                    command[1] = value;
-                    command[2] = Convert.ToByte('\n');
-                    serialPort.Write(command, 0, command.Length);
-                    Byte[] readCommand = new Byte[2];
-                    readCommand[0] = Convert.ToByte('C');
-                    readCommand[1] = Convert.ToByte('\n');
-                    serialPort.Write(readCommand, 0, readCommand.Length);
-                    Byte[] redLedValue = new Byte[1];
-                    serialPort.Read(redLedValue, 0, 1);
-                    Console.WriteLine(redLedValue[0]);
-                }
-                catch (TimeoutException) { }
-            }
+            this.controller.SendWriteMessage(Convert.ToByte('R'), (byte)Math.Round(redSlider.Value * 2.55));
+            Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('C')));
         }
 
-        private void greenSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void GreenSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (serialPort != null && serialPort.IsOpen)
-            {
-                try
-                {
-                    Byte[] command = new Byte[3];
-                    Byte value = (Byte)Math.Round(greenSlider.Value * 2.55);
-                    command[0] = Convert.ToByte('G');
-                    command[1] = value;
-                    command[2] = Convert.ToByte('\n');
-                    serialPort.Write(command, 0, command.Length);
-                    Byte[] readCommand = new Byte[2];
-                    readCommand[0] = Convert.ToByte('D');
-                    readCommand[1] = Convert.ToByte('\n');
-                    serialPort.Write(readCommand, 0, readCommand.Length);
-                    Byte[] greenLedValue = new Byte[1];
-                    serialPort.Read(greenLedValue, 0, 1);
-                    Console.WriteLine(greenLedValue[0]);
-                }
-                catch (TimeoutException) { }
-            }
+            this.controller.SendWriteMessage(Convert.ToByte('G'), (byte)Math.Round(greenSlider.Value * 2.55));
+            Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('D')));
         }
 
-        private void blueSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void BlueSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (serialPort != null && serialPort.IsOpen)
-            {
-                try
-                {
-                    Byte[] command = new Byte[3];
-                    Byte value = (Byte)Math.Round(blueSlider.Value * 2.55);
-                    command[0] = Convert.ToByte('B');
-                    command[1] = value;
-                    command[2] = Convert.ToByte('\n');
-                    serialPort.Write(command, 0, command.Length);
-                    Byte[] readCommand = new Byte[2];
-                    readCommand[0] = Convert.ToByte('E');
-                    readCommand[1] = Convert.ToByte('\n');
-                    serialPort.Write(readCommand, 0, readCommand.Length);
-                    Byte[] blueLedValue = new Byte[1];
-                    serialPort.Read(blueLedValue, 0, 1);
-                    Console.WriteLine(blueLedValue[0]);
-                }
-                catch (TimeoutException) { }
-            }
+            this.controller.SendWriteMessage(Convert.ToByte('B'), (byte)Math.Round(blueSlider.Value * 2.55));
+            Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('E')));
         }
     }
 }

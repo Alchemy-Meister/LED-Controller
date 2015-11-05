@@ -1,8 +1,8 @@
-﻿using System;
-using System.Runtime.InteropServices;
-
-namespace LED_Controller
+﻿namespace LED_Controller
 {
+    using System;
+    using System.Runtime.InteropServices;
+
     internal static class UsbNotification
     {
         public const int DbtDevicearrival = 0x8000; // system detected a new device        
