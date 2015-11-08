@@ -1,12 +1,44 @@
 // LED_Controller.ino
 
-const uint8_t redLed = 3;
-const uint8_t greenLed = 5;
-const uint8_t blueLed = 6;
+const uint8_t RED_PIN = 3;
+const uint8_t GREEN_PIN = 5;
+const uint8_t BLUE_PIN = 6;
+
+const uint8_t WRITE_RED = 'R';
+const uint8_t WRITE_GREEN = 'G';
+const uint8_t WRITE_BLUE = 'B';
+
+const uint8_t READ_RED = 'C';
+const uint8_t READ_GREEN = 'D';
+const uint8_t READ_BLUE = 'E';
+
+const uint8_t BREATHING = 'H';
+const uint8_t SPECTRUM_CYCLING = 'I';
+const uint8_t STATIC = 'J';
 
 uint8_t redLedValue = 0;
+float redLedCurrentValue = 255;
+uint8_t redLedFadeSpeed = 255 / 2;		//Speed equals the RGB color divided by the duration of the animation in seconds.
+
 uint8_t greenLedValue = 0;
+float greenLedCurrentValue = 255;
+uint8_t greenLedFadeSpeed = 255 / 2;
+
 uint8_t blueLedValue = 0;
+float blueLedCurrentValue = 255;
+uint8_t blueLedFadeSpeed = 255 / 2;
+
+uint8_t currentEffect = BREATHING;
+
+uint8_t fadeIn = 0;
+float fadeDuration = 2000000; 			//Time of the fade animation in microseconds.
+unsigned long fadeStart;
+unsigned long fadeElapsedTime;
+
+unsigned long now;
+unsigned long lastTime;
+float deltaTime;
+
 
 uint8_t code[2];
 uint8_t index = 0;
@@ -14,63 +46,105 @@ uint8_t index = 0;
 void setup() {
 	const uint16_t rate = 9600;
 
-	pinMode(redLed, OUTPUT);
-	pinMode(greenLed, OUTPUT);
-	pinMode(blueLed, OUTPUT);
+	pinMode(RED_PIN, OUTPUT);
+	pinMode(GREEN_PIN, OUTPUT);
+	pinMode(BLUE_PIN, OUTPUT);
 
-	analogWrite(redLed, redLedValue);
-	analogWrite(greenLed, greenLedValue);
-	analogWrite(blueLed, blueLedValue);
+	analogWrite(RED_PIN, redLedValue);
+	analogWrite(GREEN_PIN, greenLedValue);
+	analogWrite(BLUE_PIN, blueLedValue);
 
 	Serial.begin(rate);
+
+	now = micros();
 }
 
 void writeOnPin(char pin) {
 	switch(pin) {
-		case 'R':
+		case WRITE_RED:
 			redLedValue = code[1];
-			analogWrite(redLed, redLedValue);
+			analogWrite(RED_PIN, redLedValue);
 			break;
-		case 'G':
+		case WRITE_GREEN:
 			greenLedValue = code[1];
-			analogWrite(greenLed, greenLedValue);
+			analogWrite(GREEN_PIN, greenLedValue);
 			break;
-		case 'B':
+		case WRITE_BLUE:
 			blueLedValue = code[1];
-			analogWrite(blueLed, blueLedValue);
+			analogWrite(BLUE_PIN, blueLedValue);
 			break;
 	}
 }
 
 void readPin(char pin) {
 	switch(pin) {
-	    case 'C':
+	    case READ_RED:
 	    	Serial.write(redLedValue);
 	     	break;
-	    case 'D':
+	    case READ_GREEN:
 	    	Serial.write(greenLedValue);
 	    	break;
-	    case 'E':
+	    case READ_BLUE:
 	    	Serial.write(blueLedValue);
 	    	break;
 	}
 }
 
+void reset() {
+	redLedCurrentValue = redLedValue;
+	greenLedCurrentValue = greenLedValue;
+	blueLedCurrentValue = blueLedValue;
+	now = micros();
+}
+
 void process(void) {
 	switch(code[0]){
-		//Writes LED intensity value on redLed (R), greenLed (G) or blueLed (B) pin.
-		case 'R': case 'G': case 'B':
+		case WRITE_RED: case WRITE_GREEN: case WRITE_BLUE:
 			writeOnPin(code[0]);
 			break;
-		//Sends current value of redLedValue (C), greenLedValue (D) or blueLedValue (E) over serial.
-		case 'C': case 'D': case 'E':
+		case READ_RED: case READ_GREEN: case READ_BLUE:
 			readPin(code[0]);
+			break;
+		case BREATHING: case SPECTRUM_CYCLING: case STATIC:
+			currentEffect = code[0];
+			reset();
+			break;
+	}
+}
+
+void processEffect(void) {
+	switch(currentEffect) {
+		case BREATHING:
+			fadeElapsedTime = micros() - fadeStart;
+			if(fadeIn) {
+				redLedCurrentValue += redLedFadeSpeed * deltaTime;
+				greenLedCurrentValue += greenLedFadeSpeed * deltaTime;
+				blueLedCurrentValue += blueLedFadeSpeed * deltaTime;
+				if(fadeElapsedTime >= fadeDuration) {
+					fadeIn = 0;
+					fadeStart = micros();
+				}
+			} else {
+				redLedCurrentValue -= redLedFadeSpeed * deltaTime;
+				greenLedCurrentValue -= greenLedFadeSpeed * deltaTime;
+				blueLedCurrentValue -= blueLedFadeSpeed * deltaTime;
+				if(fadeElapsedTime >= fadeDuration) {
+					fadeIn = 1;
+					fadeStart = micros();
+				}
+			}
+			analogWrite(RED_PIN, redLedCurrentValue);
+			analogWrite(GREEN_PIN, greenLedCurrentValue);
+			analogWrite(BLUE_PIN, blueLedCurrentValue);
+			break;
+		case SPECTRUM_CYCLING:
+			
 			break;
 	}
 }
 
 void loop() {
-	if(Serial.available()) {
+	while(Serial.available()) {
 		uint8_t serialIn = Serial.read();
 		if(serialIn != '\n') {
 			code[index] = serialIn;
@@ -80,4 +154,8 @@ void loop() {
 			process();
 		}
 	}
+	lastTime = now;
+	now = micros();
+	deltaTime = (now - lastTime) / 1000000.0;
+	processEffect();
 }
