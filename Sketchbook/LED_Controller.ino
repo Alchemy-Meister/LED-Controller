@@ -17,21 +17,22 @@ const uint8_t SPECTRUM_CYCLING = 'I';
 const uint8_t STATIC = 'J';
 
 uint8_t redLedValue = 0;
-float redLedCurrentValue = 255;
-uint8_t redLedFadeSpeed = 255 / 2;		//Speed equals the RGB color divided by the duration of the animation in seconds.
+float redLedCurrentValue;
+uint8_t redLedFadeSpeed;		//Speed equals the RGB color divided by the duration of the animation in seconds.
 
 uint8_t greenLedValue = 0;
-float greenLedCurrentValue = 255;
-uint8_t greenLedFadeSpeed = 255 / 2;
+float greenLedCurrentValue;
+uint8_t greenLedFadeSpeed;
 
 uint8_t blueLedValue = 0;
-float blueLedCurrentValue = 255;
-uint8_t blueLedFadeSpeed = 255 / 2;
+float blueLedCurrentValue;
+uint8_t blueLedFadeSpeed;
 
-uint8_t currentEffect = BREATHING;
+uint8_t currentEffect = STATIC;
 
 uint8_t fadeIn = 0;
-float fadeDuration = 2000000; 			//Time of the fade animation in microseconds.
+float fadeDuration = 2000000.0; 			//Time of the fade animation in microseconds.
+float fadeDurationSeconds = fadeDuration / 1000000;
 unsigned long fadeStart;
 unsigned long fadeElapsedTime;
 
@@ -91,10 +92,15 @@ void readPin(char pin) {
 }
 
 void reset() {
-	redLedCurrentValue = redLedValue;
-	greenLedCurrentValue = greenLedValue;
-	blueLedCurrentValue = blueLedValue;
+
+	fadeIn = 0;
+
+	analogWrite(RED_PIN, redLedCurrentValue);
+	analogWrite(GREEN_PIN, greenLedCurrentValue);
+	analogWrite(BLUE_PIN, blueLedCurrentValue);
+
 	now = micros();
+	fadeStart = now;
 }
 
 void process(void) {
@@ -107,6 +113,15 @@ void process(void) {
 			break;
 		case BREATHING: case SPECTRUM_CYCLING: case STATIC:
 			currentEffect = code[0];
+			
+			redLedCurrentValue = redLedValue;
+			greenLedCurrentValue = greenLedValue;
+			blueLedCurrentValue = blueLedValue;
+
+			redLedFadeSpeed = redLedCurrentValue / fadeDurationSeconds;
+			greenLedFadeSpeed = greenLedCurrentValue / fadeDurationSeconds;
+			blueLedFadeSpeed = blueLedCurrentValue / fadeDurationSeconds;
+			
 			reset();
 			break;
 	}
