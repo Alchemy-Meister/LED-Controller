@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:LED_Controller"
         mc:Ignorable="d"
         Title="Led Controller" 
-        Height="165" Width="323"
+        Height="165" Width="337.89"
         MinHeight="166" MinWidth="323">
 
     <Grid Margin="0,0,0.209,0.178">
@@ -14,11 +14,12 @@
             <ColumnDefinition Width="139*"/>
             <ColumnDefinition Width="179*"/>
         </Grid.ColumnDefinitions>
-        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="23" Margin="10,37,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" IsEnabled="False"/>
+        <TextBox x:Name="textBox" Height="23" Margin="9,25,0,0" TextWrapping="Wrap" VerticalAlignment="Top" IsEnabled="False" HorizontalAlignment="Left" Width="126"/>
         <Slider x:Name="redSlider" Grid.Column="1" HorizontalAlignment="Left" Margin="9.775,16,0,0" VerticalAlignment="Top" Width="150" Height="22" ValueChanged="RedSliderValueChanged" Maximum="100" Style="{DynamicResource ColorSlider}" Foreground="Red"/>
         <Slider x:Name="greenSlider" Grid.Column="1" HorizontalAlignment="Left" Margin="9.775,43,0,0" VerticalAlignment="Top" Width="150" Height="22" ValueChanged="GreenSliderValueChanged" Maximum="100" Style="{DynamicResource ColorSlider}" Foreground="Lime"/>
         <Slider x:Name="blueSlider" Grid.Column="1" HorizontalAlignment="Left" Margin="9.775,71,0,0" Width="150" Height="22" VerticalAlignment="Top" ValueChanged="BlueSliderValueChanged" Maximum="100" Style="{DynamicResource ColorSlider}" Foreground="Blue"/>
         <Button x:Name="applyButton" Grid.Column="1" Content="Apply" HorizontalAlignment="Right" Margin="0,0,10.157,10.042" Width="75" RenderTransformOrigin="0.522,-0.263" VerticalAlignment="Bottom" Height="20"/>
+        <ComboBox x:Name="comboBox"  Margin="9,62,0,0" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Width="126" SelectionChanged="EffectChanged"/>
 
     </Grid>
 </Window>

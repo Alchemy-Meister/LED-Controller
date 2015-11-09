@@ -1,6 +1,7 @@
 ﻿namespace LED_Controller
 {
     using System;
+    using System.Collections.Generic;
     using System.IO.Ports;
     using System.Management;
 
@@ -9,6 +10,14 @@
         private const string DeviceName = "USB-SERIAL CH340 (COM";
         private const short BaudRate = 9600;
         private short serialPortNumber = -1;
+
+        private Dictionary<string, byte> effectList = 
+            new Dictionary<string, byte>()
+            {
+                { "Static", Convert.ToByte('J') },
+                { "Breathing", Convert.ToByte('H') },
+                { "Spectrum cycling", Convert.ToByte('I') }
+            };
 
         private SerialPort serialPort;
 
@@ -19,8 +28,8 @@
         public void InitializeSerialPort()
         {
             this.serialPort = new SerialPort("COM" + this.serialPortNumber, BaudRate);
-            this.serialPort.ReadTimeout = 500;
-            this.serialPort.WriteTimeout = 500;
+            this.serialPort.ReadTimeout = 100;
+            this.serialPort.WriteTimeout = 100;
         }
 
         // Opens the serial port connection if is not already.
@@ -75,6 +84,8 @@
                         found = true;
                         short startIndex = (short)(name.LastIndexOf("M") + 1);
                         short endIndex = (short)name.LastIndexOf(")");
+                        
+                        // The maximum number of COM and LPT ports that Windows NT supports is 256
                         this.serialPortNumber = Convert.ToInt16(name.Substring(startIndex, endIndex - startIndex));
                     }
                 }
@@ -83,6 +94,11 @@
             }
 
             return this.serialPortNumber;
+        }
+
+        public Dictionary<string, byte> getEffectList()
+        {
+            return this.effectList;
         }
 
         public void SendWriteMessage(byte command, byte value)

@@ -1,9 +1,11 @@
 ﻿namespace LED_Controller
 {
     using System;
+    using System.Collections.Generic;
     using System.Drawing;
     using System.Linq;
     using System.Windows;
+    using System.Windows.Controls;
     using System.Windows.Forms;
     using System.Windows.Interop;
 
@@ -24,7 +26,8 @@
         public MainWindow()
         {
             if (System.Diagnostics.Process.GetProcessesByName(
-                System.IO.Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetEntryAssembly().Location)).Count() > 1)
+                System.IO.Path.GetFileNameWithoutExtension(
+                    System.Reflection.Assembly.GetEntryAssembly().Location)).Count() > 1)
             {
                 System.Diagnostics.Process.GetCurrentProcess().Kill();
             }
@@ -37,6 +40,7 @@
                 this.InitializeComponent();
                 this.InitializeTray();
                 this.InitializeSerialPort();
+                this.InitializeEffectComboBox();
             }
         }
 
@@ -62,13 +66,13 @@
                 Icon = new Icon(System.Windows.Application.GetResourceStream(
                 new Uri("pack://application:,,,/LED Controller;component/resources/favicon.ico")).Stream)
             };
-            MenuItem exit = new MenuItem();
+            System.Windows.Forms.MenuItem exit = new System.Windows.Forms.MenuItem();
             exit.Index = 0;
             exit.Text = "Exit";
             exit.Click += this.Exit_Click;
-            ContextMenu trayMenu = new ContextMenu();
+            System.Windows.Forms.ContextMenu trayMenu = new System.Windows.Forms.ContextMenu();
             trayMenu.MenuItems.AddRange(
-                    new MenuItem[] { exit });
+                    new System.Windows.Forms.MenuItem[] { exit });
             this.notifyIcon.ContextMenu = trayMenu;
             this.notifyIcon.Click += this.NIcon_Click;
         }
@@ -158,6 +162,15 @@
             }
         }
 
+        private void InitializeEffectComboBox()
+        {
+            Dictionary<string, byte> effectList = this.controller.getEffectList();
+            this.comboBox.ItemsSource = effectList;
+            this.comboBox.DisplayMemberPath = "Key";
+            this.comboBox.SelectedIndex = 0;
+            this.comboBox.Items.Refresh();
+        }
+
         // Callback method when the thread returns  
         private void DeviceConnectedCallback(IAsyncResult ar)
         {
@@ -197,6 +210,8 @@
         private void ProcessDeviceConnectionGUI()
         {
             textBox.Text = "COM" + this.controller.GetSerialPort();
+            this.InitializeEffectComboBox();
+            this.comboBox.IsEnabled = true;
             redSlider.IsEnabled = true;
             greenSlider.IsEnabled = true;
             blueSlider.IsEnabled = true;
@@ -207,6 +222,7 @@
         private void ProcessDeviceDisconnectionGUI()
         {
             textBox.Text = string.Empty;
+            comboBox.IsEnabled = false;
             redSlider.IsEnabled = false;
             greenSlider.IsEnabled = false;
             blueSlider.IsEnabled = false;
@@ -242,6 +258,11 @@
         {
             this.controller.SendWriteMessage(Convert.ToByte('B'), (byte)Math.Round(blueSlider.Value * 2.55));
             Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('E')));
+        }
+
+        private void EffectChanged(object sender, SelectionChangedEventArgs e)
+        {
+            this.controller.SendReadMessage(Convert.ToByte(((KeyValuePair<string, byte>)this.comboBox.SelectedItem).Value));
         }
     }
 }
