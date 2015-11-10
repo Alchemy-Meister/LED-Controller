@@ -14,9 +14,10 @@
         private Dictionary<string, byte> effectList = 
             new Dictionary<string, byte>()
             {
-                { "Static", Convert.ToByte('J') },
-                { "Breathing", Convert.ToByte('H') },
-                { "Spectrum cycling", Convert.ToByte('I') }
+                { "Static", Convert.ToByte('K') },
+                { "Fading", Convert.ToByte('H') },
+                { "Breathing", Convert.ToByte('I') },
+                { "Spectrum cycling", Convert.ToByte('J') }
             };
 
         private SerialPort serialPort;
