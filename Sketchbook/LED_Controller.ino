@@ -2,49 +2,83 @@
 
 #include <math.h>
 
-const uint8_t RED_PIN = 3;
-const uint8_t GREEN_PIN = 5;
-const uint8_t BLUE_PIN = 6;
+const uint8_t RED_PIN 					= 3;
+const uint8_t GREEN_PIN 				= 5;
+const uint8_t BLUE_PIN 					= 6;
 
-const uint8_t WRITE_RED = 'R';
-const uint8_t WRITE_GREEN = 'G';
-const uint8_t WRITE_BLUE = 'B';
+const uint8_t WRITE_RED 				= 'R';
+const uint8_t WRITE_GREEN 				= 'G';
+const uint8_t WRITE_BLUE 				= 'B';
 
-const uint8_t READ_RED = 'C';
-const uint8_t READ_GREEN = 'D';
-const uint8_t READ_BLUE = 'E';
+const uint8_t READ_RED					= 'C';
+const uint8_t READ_GREEN 				= 'D';
+const uint8_t READ_BLUE 				= 'E';
 
-const uint8_t FADE = 'H';
-const uint8_t BREATHING = 'I';
-const uint8_t SPECTRUM_CYCLING = 'J';
-const uint8_t STATIC = 'K';
+const uint8_t FADE 						= 'H';
+const uint8_t BREATHING 				= 'I';
+const uint8_t SPECTRUM_CYCLING			= 'J';
+const uint8_t STATIC 					= 'K';
 
-uint8_t redLedValue = 0;
+const uint8_t COLORS_LENGTH	= 16;
+const uint8_t SPECTRUM_COLORS[COLORS_LENGTH][3] = {
+	{255, 0, 0},
+	{255, 0, 0},
+	{255, 153, 0},
+	{255, 153, 0},
+	{255, 255, 0},
+	{255, 255, 0},
+	{0, 255, 0},
+	{0, 255, 0},
+	{0, 255, 255},
+	{0, 255, 255},
+	{0, 0, 255},
+	{0, 0, 255},
+	{153, 0, 255},
+	{153, 0, 255},
+	{255, 0, 255},
+	{255, 0, 255}
+};
+
+uint8_t redLedValue 					= 0;
+uint8_t greenLedValue 					= 0;
+uint8_t blueLedValue 					= 0;
+
+uint8_t redIncrement;
+uint8_t greenIncrement;
+uint8_t blueIncrement;
+
 float redLedCurrentValue;
-uint8_t redLedFadeSpeed;			//Speed equals the RGB color divided by the duration of the animation in seconds.
-
-uint8_t greenLedValue = 0;
 float greenLedCurrentValue;
-uint8_t greenLedFadeSpeed;
-
-uint8_t blueLedValue = 0;
 float blueLedCurrentValue;
-uint8_t blueLedFadeSpeed;
 
-uint8_t currentEffect = STATIC;
+uint8_t targetRedLedValue;
+uint8_t targetGreenLedValue;
+uint8_t targetBlueLedValue;
 
-uint8_t fadeIn = 0;
-uint8_t breathing = 0;
-float fadeDuration = 3000000.0; 	//Time of the fade animation in microseconds.
-float offDuration = 1500000.0;
-float fadeDurationSeconds = fadeDuration / 1000000;
-unsigned long fadeStart;
-unsigned long fadeElapsedTime;
+uint8_t redEffectSpeed;
+uint8_t greenEffectSpeed;
+uint8_t blueEffectSpeed;
 
-unsigned long now;
-unsigned long lastTime;
+uint8_t currentEffect 					= STATIC;
+
+int8_t spectrumCyclingCount				= -1;
+float transitionDuration				= 2000000;
+float transitionDurationSec				= transitionDuration / 1000000;
+uint8_t spectrumEffectInitialization;
+uint32_t colorTransitionStart;
+uint32_t colorTransitionElapsedTime;
+
+uint8_t fadeIn 							= 0;
+uint8_t breathing 						= 0;
+float fadeDuration 						= 3000000;
+float offDuration 						= 1500000;
+float fadeDurationSeconds 				= fadeDuration / 1000000;
+uint32_t fadeStart;
+uint32_t fadeElapsedTime;
+
+uint32_t now;
+uint32_t lastTime;
 float deltaTime;
-
 
 uint8_t code[2];
 uint8_t index = 0;
@@ -65,8 +99,8 @@ void setup() {
 	now = micros();
 }
 
-void writeOnPin(char pin) {
-	switch(pin) {
+void writeOnPin() {
+	switch(code[0]) {
 		case WRITE_RED:
 			redLedValue = code[1];
 			analogWrite(RED_PIN, redLedValue);
@@ -82,8 +116,8 @@ void writeOnPin(char pin) {
 	}
 }
 
-void readPin(char pin) {
-	switch(pin) {
+void readPin() {
+	switch(code[0]) {
 	    case READ_RED:
 	    	Serial.write(redLedValue);
 	     	break;
@@ -96,83 +130,136 @@ void readPin(char pin) {
 	}
 }
 
-void reset() {
-
-	fadeIn = 0;
-
+void updateColor() {
 	analogWrite(RED_PIN, redLedCurrentValue);
 	analogWrite(GREEN_PIN, greenLedCurrentValue);
 	analogWrite(BLUE_PIN, blueLedCurrentValue);
+}
+
+void reset() {
+	updateColor();
 
 	now = micros();
 	fadeStart = now;
 }
 
-void process(void) {
+void initializeFadeBreathingEffect() {
+	currentEffect			= FADE;
+	fadeIn					= 0;
+	
+	redLedCurrentValue		= redLedValue;
+	greenLedCurrentValue	= greenLedValue;
+	blueLedCurrentValue		= blueLedValue;
+
+	redEffectSpeed			= ceil(redLedCurrentValue / fadeDurationSeconds);
+	greenEffectSpeed		= ceil(greenLedCurrentValue / fadeDurationSeconds);
+	blueEffectSpeed			= ceil(blueLedCurrentValue / fadeDurationSeconds);
+	
+	if(code[0] == FADE)
+		breathing			= 0;
+	else
+		breathing			= 1;
+
+	reset();
+}
+
+void initializeSpectrumCyclingEffect() {
+	currentEffect					= code[0];
+	spectrumCyclingCount			= -1;
+	spectrumEffectInitialization	= 1;
+	
+	redLedCurrentValue				= redLedValue;
+	greenLedCurrentValue			= greenLedValue;
+	blueLedCurrentValue				= blueLedValue;
+
+	reset();
+}
+
+void process() {
 	switch(code[0]){
 		case WRITE_RED: case WRITE_GREEN: case WRITE_BLUE:
-			writeOnPin(code[0]);
+			writeOnPin();
 			break;
 		case READ_RED: case READ_GREEN: case READ_BLUE:
-			readPin(code[0]);
+			readPin();
 			break;
 		case BREATHING: case FADE:
-			currentEffect = FADE;
-			
-			redLedCurrentValue = redLedValue;
-			greenLedCurrentValue = greenLedValue;
-			blueLedCurrentValue = blueLedValue;
-
-			redLedFadeSpeed = ceil(redLedCurrentValue / fadeDurationSeconds);
-			greenLedFadeSpeed = ceil(greenLedCurrentValue / fadeDurationSeconds);
-			blueLedFadeSpeed = ceil(blueLedCurrentValue / fadeDurationSeconds);
-			
-			if(code[0] == FADE)
-				breathing = 0;
-			else
-				breathing = 1;
-
-			reset();
+			initializeFadeBreathingEffect();
 			break;
-		case SPECTRUM_CYCLING: case STATIC:
-			currentEffect = code[0];
-			reset();
+		case SPECTRUM_CYCLING:
+			initializeSpectrumCyclingEffect();
+			break;
+		case STATIC:
+			redLedCurrentValue		= redLedValue;
+			greenLedCurrentValue	= greenLedValue;
+			blueLedCurrentValue		= blueLedValue;
 			break;
 	}
 }
 
-void processEffect(void) {
+float colorDownLimiter(float current, uint8_t target) {
+	if(current < target)
+		return target;
+	return current;
+}
+
+float colorUpLimiter(float current, uint8_t target) {
+	if(current > target)
+		return target;
+	return current;
+}
+
+uint8_t isColorIncrement(float current, uint8_t target) {
+	if(current < target)
+		return 1;
+	return 0;
+}
+
+float colorTranslation(float current, uint8_t target,
+	uint8_t effectSpeed, uint8_t increment)
+{
+	if(increment) {
+		current += effectSpeed * deltaTime;
+		if(current > target) {
+			current = target;
+		}
+	} else {
+		current -= effectSpeed * deltaTime;
+		if(current < target) {
+			current = target;
+		}
+	}
+	return current;
+}
+
+void processEffect() {
 	switch(currentEffect) {
 		case FADE:
 			fadeElapsedTime = micros() - fadeStart;
 			
 			if(fadeIn) {
-				redLedCurrentValue += redLedFadeSpeed * deltaTime;
-				greenLedCurrentValue += greenLedFadeSpeed * deltaTime;
-				blueLedCurrentValue += blueLedFadeSpeed * deltaTime;
+				redLedCurrentValue += redEffectSpeed * deltaTime;
+				greenLedCurrentValue += greenEffectSpeed * deltaTime;
+				blueLedCurrentValue += blueEffectSpeed * deltaTime;
 				
-				if(redLedCurrentValue > 255)
-					redLedCurrentValue = 255;
-				if(greenLedCurrentValue > 255)
-					greenLedCurrentValue = 255;
-				if(blueLedCurrentValue > 255)
-					blueLedCurrentValue = 255;
+				redLedCurrentValue = colorUpLimiter(redLedCurrentValue, 255);
+				greenLedCurrentValue = colorUpLimiter(
+					greenLedCurrentValue, 255);
+				blueLedCurrentValue = colorUpLimiter(blueLedCurrentValue, 255);
 
 				if(fadeElapsedTime >= fadeDuration) {
 					fadeIn = 0;
 					fadeStart = micros();
 				}
 			} else {
-				redLedCurrentValue -= redLedFadeSpeed * deltaTime;
-				greenLedCurrentValue -= greenLedFadeSpeed * deltaTime;
-				blueLedCurrentValue -= blueLedFadeSpeed * deltaTime;
+				redLedCurrentValue -= redEffectSpeed * deltaTime;
+				greenLedCurrentValue -= greenEffectSpeed * deltaTime;
+				blueLedCurrentValue -= blueEffectSpeed * deltaTime;
 				
-				if(redLedCurrentValue < 0)
-					redLedCurrentValue = 0;
-				if(greenLedCurrentValue < 0)
-					greenLedCurrentValue = 0;
-				if(blueLedCurrentValue < 0)
-					blueLedCurrentValue = 0;
+				redLedCurrentValue = colorDownLimiter(redLedCurrentValue, 0);
+				greenLedCurrentValue = colorDownLimiter(
+					greenLedCurrentValue, 0);
+				blueLedCurrentValue = colorDownLimiter(blueLedCurrentValue, 0);
 
 				if(fadeElapsedTime >= fadeDuration) {
 					if(breathing) {
@@ -185,9 +272,7 @@ void processEffect(void) {
 				}
 			}
 
-			analogWrite(RED_PIN, redLedCurrentValue);
-			analogWrite(GREEN_PIN, greenLedCurrentValue);
-			analogWrite(BLUE_PIN, blueLedCurrentValue);
+			updateColor();
 			break;
 		case BREATHING:
 			fadeElapsedTime = micros() - fadeStart;
@@ -199,7 +284,56 @@ void processEffect(void) {
 			}
 			break;
 		case SPECTRUM_CYCLING:
+			colorTransitionElapsedTime = micros() - colorTransitionStart;
+
+			if(colorTransitionElapsedTime >= transitionDuration || 
+				spectrumEffectInitialization) 
+			{
+				spectrumEffectInitialization = 0;
+				
+				if(spectrumCyclingCount < COLORS_LENGTH - 1) {
+					spectrumCyclingCount++;
+				} else {
+					spectrumCyclingCount = 0;
+				}
+				
+				targetRedLedValue = SPECTRUM_COLORS[spectrumCyclingCount][0];
+				targetGreenLedValue = SPECTRUM_COLORS[spectrumCyclingCount][1];
+				targetBlueLedValue = SPECTRUM_COLORS[spectrumCyclingCount][2];
+
+				redIncrement = isColorIncrement(
+					redLedCurrentValue, targetRedLedValue);
+				greenIncrement = isColorIncrement(
+					greenLedCurrentValue, targetGreenLedValue);
+				blueIncrement = isColorIncrement(
+					blueLedCurrentValue, targetBlueLedValue);
+
+				redEffectSpeed = ceil(
+					abs(redLedCurrentValue - targetRedLedValue)
+					/ transitionDurationSec);
+				greenEffectSpeed = ceil(
+					abs(greenLedCurrentValue - targetGreenLedValue)
+					/ transitionDurationSec);
+				blueEffectSpeed = ceil(
+					abs(blueLedCurrentValue - targetBlueLedValue)
+					/ transitionDurationSec);
+
+				colorTransitionStart = micros();
+			}
+
+			redLedCurrentValue = colorTranslation(
+				redLedCurrentValue, targetRedLedValue,
+				redEffectSpeed, redIncrement);
 			
+			greenLedCurrentValue = colorTranslation(
+				greenLedCurrentValue, targetGreenLedValue,
+				greenEffectSpeed, greenIncrement);
+
+			blueLedCurrentValue = colorTranslation(
+				blueLedCurrentValue, targetBlueLedValue,
+				blueEffectSpeed, blueIncrement);
+
+			updateColor();
 			break;
 	}
 }
