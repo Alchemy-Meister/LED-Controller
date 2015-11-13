@@ -143,6 +143,16 @@ void reset() {
 	fadeStart = now;
 }
 
+void staticEffect() {
+	currentEffect			= STATIC;
+			
+	redLedCurrentValue		= redLedValue;
+	greenLedCurrentValue	= greenLedValue;
+	blueLedCurrentValue		= blueLedValue;
+
+	updateColor();	
+}
+
 void initializeFadeBreathingEffect() {
 	currentEffect			= FADE;
 	fadeIn					= 0;
@@ -190,9 +200,7 @@ void process() {
 			initializeSpectrumCyclingEffect();
 			break;
 		case STATIC:
-			redLedCurrentValue		= redLedValue;
-			greenLedCurrentValue	= greenLedValue;
-			blueLedCurrentValue		= blueLedValue;
+			staticEffect();
 			break;
 	}
 }
