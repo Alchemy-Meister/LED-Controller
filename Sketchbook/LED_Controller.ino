@@ -2,22 +2,22 @@
 
 #include <math.h>
 
-const uint8_t RED_PIN 					= 3;
-const uint8_t GREEN_PIN 				= 5;
-const uint8_t BLUE_PIN 					= 6;
+const uint8_t RED_PIN					= 3;
+const uint8_t GREEN_PIN					= 5;
+const uint8_t BLUE_PIN					= 6;
 
-const uint8_t WRITE_RED 				= 'R';
-const uint8_t WRITE_GREEN 				= 'G';
-const uint8_t WRITE_BLUE 				= 'B';
+const uint8_t WRITE_RED					= 'R';
+const uint8_t WRITE_GREEN				= 'G';
+const uint8_t WRITE_BLUE				= 'B';
 
 const uint8_t READ_RED					= 'C';
 const uint8_t READ_GREEN 				= 'D';
 const uint8_t READ_BLUE 				= 'E';
 
-const uint8_t FADE 						= 'H';
-const uint8_t BREATHING 				= 'I';
+const uint8_t FADE						= 'H';
+const uint8_t BREATHING					= 'I';
 const uint8_t SPECTRUM_CYCLING			= 'J';
-const uint8_t STATIC 					= 'K';
+const uint8_t STATIC					= 'K';
 
 const uint8_t COLORS_LENGTH	= 16;
 const uint8_t SPECTRUM_COLORS[COLORS_LENGTH][3] = {
@@ -39,9 +39,9 @@ const uint8_t SPECTRUM_COLORS[COLORS_LENGTH][3] = {
 	{255, 0, 255}
 };
 
-uint8_t redLedValue 					= 0;
-uint8_t greenLedValue 					= 0;
-uint8_t blueLedValue 					= 0;
+uint8_t redLedValue						= 0;
+uint8_t greenLedValue					= 0;
+uint8_t blueLedValue					= 0;
 
 uint8_t redIncrement;
 uint8_t greenIncrement;
@@ -59,7 +59,7 @@ uint8_t redEffectSpeed;
 uint8_t greenEffectSpeed;
 uint8_t blueEffectSpeed;
 
-uint8_t currentEffect 					= STATIC;
+uint8_t currentEffect					= STATIC;
 
 int8_t spectrumCyclingCount				= -1;
 float transitionDuration				= 2000000;
@@ -68,11 +68,11 @@ uint8_t spectrumEffectInitialization;
 uint32_t colorTransitionStart;
 uint32_t colorTransitionElapsedTime;
 
-uint8_t fadeIn 							= 0;
-uint8_t breathing 						= 0;
-float fadeDuration 						= 3000000;
-float offDuration 						= 1500000;
-float fadeDurationSeconds 				= fadeDuration / 1000000;
+uint8_t fadeIn							= 0;
+uint8_t breathing						= 0;
+float fadeDuration						= 3000000;
+float offDuration						= 1500000;
+float fadeDurationSeconds				= fadeDuration / 1000000;
 uint32_t fadeStart;
 uint32_t fadeElapsedTime;
 
@@ -118,15 +118,15 @@ void writeOnPin() {
 
 void readPin() {
 	switch(code[0]) {
-	    case READ_RED:
-	    	Serial.write(redLedValue);
-	     	break;
-	    case READ_GREEN:
-	    	Serial.write(greenLedValue);
-	    	break;
-	    case READ_BLUE:
-	    	Serial.write(blueLedValue);
-	    	break;
+		case READ_RED:
+			Serial.write(redLedValue);
+			break;
+		case READ_GREEN:
+			Serial.write(greenLedValue);
+			break;
+		case READ_BLUE:
+			Serial.write(blueLedValue);
+			break;
 	}
 }
 
