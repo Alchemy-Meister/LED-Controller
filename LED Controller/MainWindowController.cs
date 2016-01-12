@@ -7,28 +7,19 @@
 
     class MainWindowController
     {
-        private const string DeviceName = "USB-SERIAL CH340 (COM";
-        private const short BaudRate = 9600;
-        private short serialPortNumber = -1;
-
-        private Dictionary<string, byte> effectList = 
-            new Dictionary<string, byte>()
-            {
-                { "Static", Convert.ToByte('K') },
-                { "Fading", Convert.ToByte('H') },
-                { "Breathing", Convert.ToByte('I') },
-                { "Spectrum cycling", Convert.ToByte('J') }
-            };
-
         private SerialPort serialPort;
+        private SerialModel serialModel;
 
         public MainWindowController()
         {
+            this.serialModel = new SerialModel();
         }
 
         public void InitializeSerialPort()
         {
-            this.serialPort = new SerialPort("COM" + this.serialPortNumber, BaudRate);
+            this.serialPort = new SerialPort(
+                SerialModel.COM + this.serialModel.GetSerialPortNumber(),
+                SerialModel.BaudRate);
             this.serialPort.ReadTimeout = 100;
             this.serialPort.WriteTimeout = 100;
         }
@@ -52,16 +43,21 @@
             return this.serialPort != null ? this.serialPort.IsOpen : false;
         }
 
+        public Dictionary<string, byte> GetEffectList()
+        {
+            return this.serialModel.GetEffectList();
+        }
+
         public short GetSerialPort()
         {
-            return this.serialPortNumber;
+            return this.serialModel.GetSerialPortNumber();
         }
         
         // Function queries the system using WMI and returns the serial port number if the device 
         // is connected to the system, -1 otherwise.   
         public short DeviceUpdatedSerialPort()
         {
-            this.serialPortNumber = -1;
+            this.serialModel.SetSerialPortNumber(-1);
 
             // Getting a list of all available com port devices and their friendly names     
             // must add System.Management DLL resource to solution before using this     
@@ -80,26 +76,22 @@
                     string name = deviceArray[index].GetPropertyValue("Name").ToString();
 
                     // Checks if the current device is the desired. 
-                    if (name.Contains(DeviceName))
+                    if (name.Contains(SerialModel.DeviceName))
                     {
                         found = true;
                         short startIndex = (short)(name.LastIndexOf("M") + 1);
                         short endIndex = (short)name.LastIndexOf(")");
                         
                         // The maximum number of COM and LPT ports that Windows NT supports is 256
-                        this.serialPortNumber = Convert.ToInt16(name.Substring(startIndex, endIndex - startIndex));
+                        this.serialModel.SetSerialPortNumber(
+                            Convert.ToInt16(name.Substring(startIndex, endIndex - startIndex)));
                     }
                 }
 
                 searcher.Dispose();
             }
 
-            return this.serialPortNumber;
-        }
-
-        public Dictionary<string, byte> getEffectList()
-        {
-            return this.effectList;
+            return this.serialModel.GetSerialPortNumber();
         }
 
         public void SendWriteMessage(byte command, byte value)

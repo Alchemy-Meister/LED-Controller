@@ -164,7 +164,7 @@
 
         private void InitializeEffectComboBox()
         {
-            Dictionary<string, byte> effectList = this.controller.getEffectList();
+            Dictionary<string, byte> effectList = this.controller.GetEffectList();
             this.comboBox.ItemsSource = effectList;
             this.comboBox.DisplayMemberPath = "Key";
             this.comboBox.SelectedIndex = 0;
