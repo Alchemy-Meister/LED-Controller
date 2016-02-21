@@ -19,7 +19,8 @@
         <Slider x:Name="greenSlider" Grid.Column="1" HorizontalAlignment="Left" Margin="9.775,43,0,0" VerticalAlignment="Top" Width="150" Height="22" ValueChanged="GreenSliderValueChanged" Maximum="100" Style="{DynamicResource ColorSlider}" Foreground="Lime"/>
         <Slider x:Name="blueSlider" Grid.Column="1" HorizontalAlignment="Left" Margin="9.775,71,0,0" Width="150" Height="22" VerticalAlignment="Top" ValueChanged="BlueSliderValueChanged" Maximum="100" Style="{DynamicResource ColorSlider}" Foreground="Blue"/>
         <Button x:Name="applyButton" Grid.Column="1" Content="Apply" HorizontalAlignment="Right" Margin="0,0,10.157,10.042" Width="75" RenderTransformOrigin="0.522,-0.263" VerticalAlignment="Bottom" Height="20"/>
-        <ComboBox x:Name="comboBox"  Margin="9,62,0,0" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Width="126" SelectionChanged="EffectChanged"/>
+        <ComboBox x:Name="effectCBox"  Margin="9,79.96,0,0" Height="22" MinWidth="126"  VerticalAlignment="Top" SelectionChanged="EffectChanged" HorizontalAlignment="Left" Width="126"/>
+        <ComboBox x:Name="statusCBox" Margin="9,53,0,0" VerticalAlignment="Top" MinWidth="126" HorizontalAlignment="Left" Width="126" Height="21.96" SelectionChanged="StatusChanged"/>
 
     </Grid>
 </Window>
