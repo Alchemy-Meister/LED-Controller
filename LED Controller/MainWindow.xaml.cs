@@ -23,6 +23,12 @@
         // Delegate wrapper function for the deviceSerialPort function
         private delegate short DeviceSerialPortDelegate();
 
+        // Previous value of the LEDs
+        private string previousStatus = null;
+
+        private bool statusHardCoded = true;
+        private bool effectHardCoded = true;
+
         public MainWindow()
         {
             if (System.Diagnostics.Process.GetProcessesByName(
@@ -165,10 +171,26 @@
         private void InitializeEffectComboBox()
         {
             Dictionary<string, byte> effectList = this.controller.GetEffectList();
-            this.comboBox.ItemsSource = effectList;
-            this.comboBox.DisplayMemberPath = "Key";
-            this.comboBox.SelectedIndex = 0;
-            this.comboBox.Items.Refresh();
+            Dictionary<string, byte> statusList = this.controller.GetStatusList();
+
+            this.effectCBox.ItemsSource = effectList;
+            this.effectCBox.DisplayMemberPath = "Key";
+            this.effectCBox.SelectedIndex = 0;
+            this.effectHardCoded = false;
+            this.effectCBox.Items.Refresh();
+
+            this.statusCBox.ItemsSource = statusList;
+            this.statusCBox.DisplayMemberPath = "Key";
+            this.statusCBox.SelectedIndex = 0;
+            this.statusHardCoded = false;
+            this.statusCBox.Items.Refresh();
+        }
+
+        private void SaveRGBValues()
+        {
+            this.controller.SetRedLedValue((byte)Math.Round(redSlider.Value * 2.55));
+            this.controller.SetGreenLedValue((byte)Math.Round(greenSlider.Value * 2.55));
+            this.controller.SetBlueLedValue((byte)Math.Round(blueSlider.Value * 2.55));
         }
 
         // Callback method when the thread returns  
@@ -188,6 +210,7 @@
                     // Opens the serial connection and updates the GUI on a safe thread.
                     this.controller.InitializeSerialPort();
                     this.controller.OpenSerialPort();
+
                     this.SafeExecution(this.ProcessDeviceConnectionGUI);
                 }
             }
@@ -210,23 +233,39 @@
         private void ProcessDeviceConnectionGUI()
         {
             textBox.Text = "COM" + this.controller.GetSerialPort();
-            this.InitializeEffectComboBox();
-            this.comboBox.IsEnabled = true;
-            redSlider.IsEnabled = true;
-            greenSlider.IsEnabled = true;
-            blueSlider.IsEnabled = true;
-            applyButton.IsEnabled = true;
+            this.statusCBox.IsEnabled = true;
+            if (this.controller.IsLedPowered())
+            {
+                this.ProcessLedOnGUI();
+                this.controller.InitializeDevice();
+            }
+        }
+
+        private void ProcessLedOnGUI()
+        {
+            this.effectCBox.IsEnabled = true;
+            this.redSlider.IsEnabled = true;
+            this.greenSlider.IsEnabled = true;
+            this.blueSlider.IsEnabled = true;
+            this.applyButton.IsEnabled = true;
         }
 
         // Updates de GUI according to the device disconneciton.
         private void ProcessDeviceDisconnectionGUI()
         {
-            textBox.Text = string.Empty;
-            comboBox.IsEnabled = false;
-            redSlider.IsEnabled = false;
-            greenSlider.IsEnabled = false;
-            blueSlider.IsEnabled = false;
-            applyButton.IsEnabled = false;
+            this.SaveRGBValues();
+            this.textBox.Text = string.Empty;
+            this.statusCBox.IsEnabled = false;
+            this.ProcessLedOffGUI();
+        }
+
+        private void ProcessLedOffGUI()
+        {
+            this.effectCBox.IsEnabled = false;
+            this.redSlider.IsEnabled = false;
+            this.greenSlider.IsEnabled = false;
+            this.blueSlider.IsEnabled = false;
+            this.applyButton.IsEnabled = false;
         }
 
         // Execute action in the GUI thread.
@@ -262,7 +301,38 @@
 
         private void EffectChanged(object sender, SelectionChangedEventArgs e)
         {
-            this.controller.SendReadMessage(Convert.ToByte(((KeyValuePair<string, byte>)this.comboBox.SelectedItem).Value));
+            if (!this.effectHardCoded)
+            {
+                this.controller.SendWriteMessage(Convert.ToByte(((KeyValuePair<string, byte>)this.effectCBox.SelectedItem).Value));
+            }
+        }
+
+        private void StatusChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if(!this.statusHardCoded)
+            {
+                KeyValuePair<string, byte> selectedStatus =
+                ((KeyValuePair<string, byte>)this.statusCBox.SelectedItem);
+                if (this.previousStatus == null || this.previousStatus != selectedStatus.Key)
+                {
+                    this.controller.SendWriteMessage(Convert.ToByte(selectedStatus.Value));
+
+                    if (selectedStatus.Key.Equals(this.controller.GetStatusList().Keys.First()))
+                    {
+                        this.controller.SetLedPower(true);
+                        this.controller.InitializeDevice();
+                        this.ProcessLedOnGUI();
+                    }
+                    else
+                    {
+                        this.controller.SetLedPower(false);
+                        this.SaveRGBValues();
+                        this.ProcessLedOffGUI();
+                    }
+                }
+
+                this.previousStatus = selectedStatus.Key;
+            }
         }
     }
 }

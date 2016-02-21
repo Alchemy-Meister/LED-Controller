@@ -24,6 +24,13 @@
             this.serialPort.WriteTimeout = 100;
         }
 
+        public void InitializeDevice()
+        {
+            this.SendWriteMessage(Convert.ToByte('R'), this.GetRedLedValue());
+            this.SendWriteMessage(Convert.ToByte('G'), this.GetGreenLedValue());
+            this.SendWriteMessage(Convert.ToByte('B'), this.GetBlueLedValue());
+        }
+
         // Opens the serial port connection if is not already.
         public void OpenSerialPort()
         {
@@ -48,11 +55,56 @@
             return this.serialModel.GetEffectList();
         }
 
+        public Dictionary<string, byte> GetStatusList()
+        {
+            return this.serialModel.GetStatusList();
+        }
+
         public short GetSerialPort()
         {
             return this.serialModel.GetSerialPortNumber();
         }
-        
+
+        public void SetLedPower(bool power)
+        {
+            this.serialModel.SetLedPower(power);
+        }
+
+        public bool IsLedPowered()
+        {
+            return this.serialModel.GetLedPower();
+        }
+
+        public byte GetRedLedValue()
+        {
+            return this.serialModel.GetRedLedValue();
+        }
+
+        public void SetRedLedValue(byte value)
+        {
+            this.serialModel.SetRedLedValue(value);
+        }
+
+        public byte GetGreenLedValue()
+        {
+            return this.serialModel.GetGreenLedValue();
+        }
+
+        public void SetGreenLedValue(byte value)
+        {
+            this.serialModel.SetGreenLedValue(value);
+        }
+
+        public byte GetBlueLedValue()
+        {
+            return this.serialModel.GetBlueLedValue();
+        }
+
+        public void SetBlueLedValue(byte value)
+        {
+            this.serialModel.SetBlueLedValue(value);
+        }
+
         // Function queries the system using WMI and returns the serial port number if the device 
         // is connected to the system, -1 otherwise.   
         public short DeviceUpdatedSerialPort()
@@ -94,6 +146,24 @@
             return this.serialModel.GetSerialPortNumber();
         }
 
+        public void SendWriteMessage(byte command)
+        {
+            if (this.serialPort != null && this.serialPort.IsOpen)
+            {
+                try
+                {
+                    byte[] message = new byte[2];
+                    message[0] = command;
+                    message[1] = Convert.ToByte('\n');
+                    this.serialPort.Write(message, 0, message.Length);
+                }
+                catch (TimeoutException)
+                {
+                    Console.WriteLine(System.Environment.StackTrace);
+                }
+            }
+        }
+
         public void SendWriteMessage(byte command, byte value)
         {
             if (this.serialPort != null && this.serialPort.IsOpen)
@@ -106,8 +176,9 @@
                     message[2] = Convert.ToByte('\n');
                     this.serialPort.Write(message, 0, message.Length);
                 }
-                catch (TimeoutException)
+                catch (Exception)
                 {
+                    Console.WriteLine(System.Environment.StackTrace);
                 }
             }
         }
@@ -129,6 +200,7 @@
                 }
                 catch (TimeoutException)
                 {
+                    Console.WriteLine(System.Environment.StackTrace);
                     return null;
                 }
             }
