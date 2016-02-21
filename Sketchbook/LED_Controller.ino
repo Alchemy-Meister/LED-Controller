@@ -2,26 +2,32 @@
 
 #include <math.h>
 
+// Declares the RGB PINS for Arduino
 const uint8_t RED_PIN					= 3;
 const uint8_t GREEN_PIN					= 5;
 const uint8_t BLUE_PIN					= 6;
 
+// Declares the RGB WRITE COMMANDS
 const uint8_t WRITE_RED					= 'R';
 const uint8_t WRITE_GREEN				= 'G';
 const uint8_t WRITE_BLUE				= 'B';
 
+// Declares the RGB READ COMMANDS
 const uint8_t READ_RED					= 'C';
 const uint8_t READ_GREEN 				= 'D';
 const uint8_t READ_BLUE 				= 'E';
 
+// Declares the POWER COMMANDS
 const uint8_t TURN_ON					= 'N';
 const uint8_t TURN_OFF					= 'F';
 
+// Declares the EFFECTS COMMANDS
 const uint8_t FADE						= 'H';
 const uint8_t BREATHING					= 'I';
 const uint8_t SPECTRUM_CYCLING			= 'J';
 const uint8_t STATIC					= 'K';
 
+// Declares bi-dimensional array for storing spectrum's RGB colors.
 const uint8_t COLORS_LENGTH	= 16;
 const uint8_t SPECTRUM_COLORS[COLORS_LENGTH][3] = {
 	{255, 0, 0},
@@ -42,50 +48,101 @@ const uint8_t SPECTRUM_COLORS[COLORS_LENGTH][3] = {
 	{255, 0, 255}
 };
 
+// Boolean to check if LEDs powered on/off.
 uint8_t ledPower						= 1;
 
+// Base RGB color from witch each effect starts. 
 uint8_t redLedValue						= 0;
 uint8_t greenLedValue					= 0;
 uint8_t blueLedValue					= 0;
 
+// RGB color increment or decrement value.
 uint8_t redIncrement;
 uint8_t greenIncrement;
 uint8_t blueIncrement;
 
+// Actual RBG color value.
 float redLedCurrentValue;
 float greenLedCurrentValue;
 float blueLedCurrentValue;
 
+// Target RGB color to be achieved in LedCurrentValue variables.
 uint8_t targetRedLedValue;
 uint8_t targetGreenLedValue;
 uint8_t targetBlueLedValue;
 
+// Speed with witch the RGB color changes from current to target.
 uint8_t redEffectSpeed;
 uint8_t greenEffectSpeed;
 uint8_t blueEffectSpeed;
 
+// Actual effect type.
 uint8_t currentEffect					= STATIC;
 
+/* SPECTRUM CYCLING EFFECT
+ * ------------------------------
+ * This effect loops a RGB color bi-dimensional array, makes a color 
+ * transition and then stays in the target color for the same amount of time.
+ */
+
+// Duration for single color transition.
+const float transitionDuration			= 2000000;
+const float transitionDurationSec		= transitionDuration / 1000000;
+
+// Index for accessing RGB color bi-dimensional array.
 int8_t spectrumCyclingCount				= -1;
-float transitionDuration				= 2000000;
-float transitionDurationSec				= transitionDuration / 1000000;
+
+// Boolean to check if the effect needs initialization.
 uint8_t spectrumEffectInitialization;
+
+// Time when color transition starts in milliseconds.
 uint32_t colorTransitionStart;
+
+// Passed time since color transition started in milliseconds.
 uint32_t colorTransitionElapsedTime;
+//-------------------------------
 
+/* FADE AND BREATHING EFFECTS.
+ * ------------------------------
+ * This effect fades in and out for a single color for a specific amount of
+ * time. If the breathing variable is TRUE, after the fade out it stays
+ * off for a determined amount of time and then repeats. If the breathing
+ * variable is FALSE this las part is omitted.
+ */
+
+// Duration of fade ins and outs.
+const float fadeDuration					= 3000000;
+const float fadeDurationSeconds				= fadeDuration / 1000000;
+
+// Duration of the off time for the breathing part effect.
+const float offDuration						= 1500000;
+
+// Boolean to check if the effect is fade in/out.
 uint8_t fadeIn							= 0;
-uint8_t breathing						= 0;
-float fadeDuration						= 3000000;
-float offDuration						= 1500000;
-float fadeDurationSeconds				= fadeDuration / 1000000;
-uint32_t fadeStart;
-uint32_t fadeElapsedTime;
 
+// Boolean to check if the effect is breathing.
+uint8_t breathing						= 0;
+
+// Time when fade in/out starts in milliseconds.
+uint32_t fadeStart;
+
+// Passed time since face in/out started in milliseconds.
+uint32_t fadeElapsedTime;
+//-------------------------------
+
+// Actual time in milliseconds.
 uint32_t now;
+
+// Time since the last iteration was executed.
 uint32_t lastTime;
+
+// Elapsed time between actual time and last iteration.
 float deltaTime;
 
+// Byte array where the COMMAND is stored.
 uint8_t code[2];
+
+// Index to access the COMMAND array.
 uint8_t index = 0;
 
 void setup() {
