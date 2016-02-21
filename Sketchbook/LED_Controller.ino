@@ -14,6 +14,9 @@ const uint8_t READ_RED					= 'C';
 const uint8_t READ_GREEN 				= 'D';
 const uint8_t READ_BLUE 				= 'E';
 
+const uint8_t TURN_ON					= 'N';
+const uint8_t TURN_OFF					= 'F';
+
 const uint8_t FADE						= 'H';
 const uint8_t BREATHING					= 'I';
 const uint8_t SPECTRUM_CYCLING			= 'J';
@@ -38,6 +41,8 @@ const uint8_t SPECTRUM_COLORS[COLORS_LENGTH][3] = {
 	{255, 0, 255},
 	{255, 0, 255}
 };
+
+uint8_t ledPower						= 1;
 
 uint8_t redLedValue						= 0;
 uint8_t greenLedValue					= 0;
@@ -113,6 +118,12 @@ void writeOnPin() {
 			blueLedValue = code[1];
 			analogWrite(BLUE_PIN, blueLedValue);
 			break;
+		case TURN_OFF:
+			ledPower = 0;
+			analogWrite(RED_PIN, 0);
+			analogWrite(GREEN_PIN, 0);
+			analogWrite(BLUE_PIN, 0);
+			break;
 	}
 }
 
@@ -126,6 +137,21 @@ void readPin() {
 			break;
 		case READ_BLUE:
 			Serial.write(blueLedValue);
+			break;
+	}
+}
+
+void turnOnProcess() {
+	ledPower = 1;
+	switch (currentEffect) {
+	    case BREATHING: case FADE:
+			initializeFadeBreathingEffect();
+			break;
+		case SPECTRUM_CYCLING:
+			initializeSpectrumCyclingEffect();
+			break;
+		case STATIC:
+			staticEffect();
 			break;
 	}
 }
@@ -174,7 +200,7 @@ void initializeFadeBreathingEffect() {
 }
 
 void initializeSpectrumCyclingEffect() {
-	currentEffect					= code[0];
+	currentEffect					= SPECTRUM_CYCLING;
 	spectrumCyclingCount			= -1;
 	spectrumEffectInitialization	= 1;
 	
@@ -187,7 +213,9 @@ void initializeSpectrumCyclingEffect() {
 
 void process() {
 	switch(code[0]){
-		case WRITE_RED: case WRITE_GREEN: case WRITE_BLUE:
+		case TURN_ON:
+			turnOnProcess();
+		case WRITE_RED: case WRITE_GREEN: case WRITE_BLUE: case TURN_OFF:
 			writeOnPin();
 			break;
 		case READ_RED: case READ_GREEN: case READ_BLUE:
@@ -361,5 +389,7 @@ void loop() {
 	lastTime = now;
 	now = micros();
 	deltaTime = (now - lastTime) / 1000000.0;
-	processEffect();
+	if(ledPower) {
+		processEffect();
+	}
 }
