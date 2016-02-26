@@ -21,6 +21,8 @@ class SpectrumCycling:public TimeBasedEffect {
 		// Boolean to check if the effect needs initialization.
 		uint8_t spectrumEffectInitialization;
 
+		Color target;
+
 		void calculateSpeed(const FloatColor currentColor,
 			const Color targetColor);
 

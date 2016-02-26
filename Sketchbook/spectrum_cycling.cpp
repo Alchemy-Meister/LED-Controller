@@ -29,8 +29,6 @@ void SpectrumCycling::processEffect(FloatColor &color,
 	// Updates cycling elapsed time.
 	this->elapsedTime = micros() - this->startTime;
 
-	Color target;
-
 	// IF elapsed time surpasses transitionDuration or initialization
 	// flag is enabled.
 	if(this->elapsedTime >= SpectrumCycling::transitionDuration || 
@@ -43,30 +41,27 @@ void SpectrumCycling::processEffect(FloatColor &color,
 		this->updateColorIndex();
 		
 		// Retrieves RGB color from the bi-dimensional as color targets.
-		Color target = SpectrumCycling::spectrumColors[this->colorIndex];
+		this->target = SpectrumCycling::spectrumColors[this->colorIndex];
 
 		// Calculates the transition speed.
 		this->calculateSpeed(color, target);
 
 		// Restarts the transition initialization time.
-		this->elapsedTime = micros();
+		this->startTime = micros();
 	}
 
 	// Calculates new color subtraction after transition.
 	this->transition(color, target, deltaTime);
 }
 
-SpectrumCycling::SpectrumCycling() {
-	this->colorIndex = -1;
-	this->spectrumEffectInitialization = 1;
-	this->elapsedTime = 0;
-}
+SpectrumCycling::SpectrumCycling() {}
 
 void SpectrumCycling::initializeEffect() {
 	// Sets initial value of the array access INDEX.
 	this->colorIndex = -1;
 	// Sets effect INITIALIZATION flag as TRUE.
 	this->spectrumEffectInitialization = 1;
+	this->elapsedTime = 0;
 }
 
 void SpectrumCycling::setInitializationFlag(const uint8_t initialize) {
