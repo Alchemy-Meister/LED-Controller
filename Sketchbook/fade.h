@@ -17,6 +17,8 @@ class Fade : public TimeBasedEffect {
 	private:
 		// Boolean to check if the effect is fade in/out.
 		uint8_t fadeIn;
+		// Boolean to check if the effects needs to breath.
+		uint8_t breath;
 		// Boolean to check if the effect is breathing.
 		uint8_t breathing;
 

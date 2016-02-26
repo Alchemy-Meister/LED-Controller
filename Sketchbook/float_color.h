@@ -32,10 +32,10 @@ class FloatColor
 		void setColors(const FloatColor &color);
 		void setColors(const Color &color);
 
-		static uint8_t colorUpLimiter(const float color, const uint8_t limiter);
-		static uint8_t colorDownLimiter(const float color, 
+		static float colorUpLimiter(const float color, const uint8_t limiter);
+		static float colorDownLimiter(const float color, 
 			const uint8_t limiter);
-		static uint8_t componentIsIncrement(const uint8_t color,
+		static uint8_t componentIsIncrement(const float color,
 			const uint8_t target);
 };
 

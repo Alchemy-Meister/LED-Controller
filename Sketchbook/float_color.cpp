@@ -85,7 +85,7 @@ void FloatColor::setColors(const Color &color) {
 }
 
 // This function Check if the input value exceeds the target value.
-uint8_t FloatColor::colorUpLimiter(const float color, const uint8_t limiter) {
+float FloatColor::colorUpLimiter(const float color, const uint8_t limiter) {
 	// IF input surpasses the target returns the target value.
 	if(color > limiter)
 		return limiter;
@@ -93,7 +93,7 @@ uint8_t FloatColor::colorUpLimiter(const float color, const uint8_t limiter) {
 }
 
 // This function Check if the input value exceeds the target value.
-uint8_t FloatColor::colorDownLimiter(const float color, const uint8_t limiter) {
+float FloatColor::colorDownLimiter(const float color, const uint8_t limiter) {
 	// IF input surpasses the target returns the target value.
 	if(color < limiter)
 		return limiter;
@@ -102,7 +102,7 @@ uint8_t FloatColor::colorDownLimiter(const float color, const uint8_t limiter) {
 
 // This function returns a boolean flag to check if the input needs to 
 // increment or decrement to reach the target value.
-uint8_t FloatColor::componentIsIncrement(const uint8_t color,
+uint8_t FloatColor::componentIsIncrement(const float color,
 	const uint8_t target)
 {
 	if(color < target)

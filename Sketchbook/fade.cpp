@@ -5,10 +5,7 @@ const float Fade::fadeDurationSeconds = Fade::fadeDuration / 1000000;
 
 const float Fade::offDuration = 1500000;
 
-Fade::Fade() {
-	// Sets fade in flag as FALSE.
-	this->fadeIn = 0;
-}
+Fade::Fade() {}
 
 void Fade::initializeEffect(const FloatColor &color, const uint8_t breath)
 {
@@ -17,11 +14,11 @@ void Fade::initializeEffect(const FloatColor &color, const uint8_t breath)
 	// Calculates the face speed for the base color.
 	this->calculateSpeed(color);
 
-	// IF true activates its flag.
+	// IF true activates breath flag.
 	if(breath)
-		this->breathing = 1;
+		this->breath = 1;
 	else
-		this->breathing	= 0;
+		this->breath = 0;
 }
 
 void Fade::calculateSpeed(const FloatColor &color) {
@@ -43,6 +40,7 @@ void Fade::processEffect(FloatColor &color, const float deltaTime) {
 		if(this->elapsedTime >= Fade::offDuration) {
 			// ELSE set flag to FADE IN.
 			this->fadeIn = 1;
+			this->breathing = 0;
 			// Restarts the face initialization time.
 			this->startTime = micros();
 		}
@@ -70,7 +68,7 @@ void Fade::processEffect(FloatColor &color, const float deltaTime) {
 			// IF elapsed time surpasses fade duration.
 			if(this->elapsedTime >= Fade::fadeDuration) {
 				// IF the breathing flag is enabled.
-				if(this->breathing) {
+				if(this->breath) {
 					// ELSE set flag to BREATHING.
 					this->breathing = 1;
 					// Restarts the face initialization time.

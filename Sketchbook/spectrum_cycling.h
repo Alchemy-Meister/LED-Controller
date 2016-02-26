@@ -2,7 +2,6 @@
 #define SPECTRUM_CYCLING_H
 
 #include <stdint.h>
-#include <stdlib.h>
 #include <math.h>
 #include "color.h"
 #include "float_color.h"
