@@ -4,7 +4,7 @@ void TimeBasedEffect::setStartTime(uint32_t currentTime) {
 	this->startTime = currentTime;
 }
 
-float TimeBasedEffect::getComponentSpeed(FloatColor::RGB component) const {
+uint8_t TimeBasedEffect::getComponentSpeed(FloatColor::RGB component) const {
 	switch(component) {
 		case FloatColor::RED:
 			return this->colorSpeed.getRed();

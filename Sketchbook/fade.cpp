@@ -22,7 +22,7 @@ void Fade::initializeEffect(const FloatColor &color, const uint8_t breath)
 }
 
 void Fade::calculateSpeed(const FloatColor &color) {
-	this->colorSpeed = FloatColor(
+	this->colorSpeed = Color(
 		ceil(color.getRed() / Fade::fadeDurationSeconds),
 		ceil(color.getGreen() / Fade::fadeDurationSeconds),
 		ceil(color.getBlue() / Fade::fadeDurationSeconds)

@@ -27,7 +27,7 @@ void SpectrumCycling::processEffect(FloatColor &color,
 	const float deltaTime)
 {
 	// Updates cycling elapsed time.
-	this->elapsedTime = micros();
+	this->elapsedTime = micros() - this->startTime;
 
 	Color target;
 
@@ -86,7 +86,7 @@ void SpectrumCycling::updateColorIndex() {
 void SpectrumCycling::calculateSpeed(const FloatColor currentColor,
 	const Color targetColor)
 {
-	this->colorSpeed = FloatColor(
+	this->colorSpeed = Color(
 		this->calculateCompSpeed(currentColor.getRed(), targetColor.getRed()),
 		this->calculateCompSpeed(currentColor.getGreen(),
 			targetColor.getGreen()),
@@ -94,7 +94,7 @@ void SpectrumCycling::calculateSpeed(const FloatColor currentColor,
 			targetColor.getBlue()));
 }
 
-float SpectrumCycling::calculateCompSpeed(const float currentComp,
+uint8_t SpectrumCycling::calculateCompSpeed(const float currentComp,
 	const uint8_t targetComp)
 {
 	return ceil(abs(currentComp - targetComp) /

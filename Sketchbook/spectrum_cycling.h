@@ -24,7 +24,7 @@ class SpectrumCycling:public TimeBasedEffect {
 		void calculateSpeed(const FloatColor currentColor,
 			const Color targetColor);
 
-		float calculateCompSpeed(const float currentComp,
+		uint8_t calculateCompSpeed(const float currentComp,
 			const uint8_t targetComp);
 	public:
 		// Duration for single color transition.
