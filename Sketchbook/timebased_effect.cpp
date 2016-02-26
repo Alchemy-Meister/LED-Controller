@@ -18,17 +18,15 @@ float TimeBasedEffect::getComponentSpeed(FloatColor::RGB component) const {
 
 // This function calculates the next color transition, depending on the 
 // target color, and effect speed.
-FloatColor TimeBasedEffect::transition(const FloatColor &color,
+void TimeBasedEffect::transition(FloatColor &color,
 	const Color &target, const float deltaTime)
 {
-	FloatColor transitedColor = FloatColor();
-	transitedColor.setRed(this->componentTransition(
+	color.setRed(this->componentTransition(
 		color.getRed(), target.getRed(), deltaTime, FloatColor::RED));
-	transitedColor.setGreen(this->componentTransition(
+	color.setGreen(this->componentTransition(
 		color.getGreen(), target.getGreen(), deltaTime, FloatColor::GREEN));
-	transitedColor.setBlue(this->componentTransition(
+	color.setBlue(this->componentTransition(
 		color.getBlue(), target.getBlue(), deltaTime, FloatColor::BLUE));
-	return transitedColor;
 }
 
 float TimeBasedEffect::componentTransition(const float component,
@@ -44,7 +42,7 @@ float TimeBasedEffect::componentTransition(const float component,
 	} else {
 		// SUBTRACTS relative increment. (decrement)
 		// Make correction if target value gets surpassed.
-		return FloatColor::colorUpLimiter(component - 
+		return FloatColor::colorDownLimiter(component - 
 			this->getComponentSpeed(compIdentifier) * deltaTime, targetComp);
 	}	
  }

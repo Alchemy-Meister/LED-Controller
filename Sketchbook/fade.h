@@ -34,7 +34,7 @@ class Fade : public TimeBasedEffect {
 		void setFadeStartTime(uint32_t currentTime);
 
 		void initializeEffect(const FloatColor &color, const uint8_t breath);
-		FloatColor processEffect(FloatColor &color, const float deltaTime);
+		void processEffect(FloatColor &color, const float deltaTime);
 };
 
 #endif

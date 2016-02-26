@@ -43,7 +43,7 @@ class SpectrumCycling:public TimeBasedEffect {
 		uint8_t needsInitialization();
 		void setInitializationFlag(const uint8_t initialize);
 		
-		FloatColor processEffect(const FloatColor &color, const float deltaTime);
+		void processEffect(FloatColor &color, const float deltaTime);
 
 		void updateColorIndex();
 };

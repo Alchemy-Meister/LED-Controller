@@ -6,13 +6,13 @@ const float Fade::fadeDurationSeconds = Fade::fadeDuration / 1000000;
 const float Fade::offDuration = 1500000;
 
 Fade::Fade() {
-	// Sets fade in flag as TRUE.
+	// Sets fade in flag as FALSE.
 	this->fadeIn = 0;
 }
 
 void Fade::initializeEffect(const FloatColor &color, const uint8_t breath)
 {
-	// Sets fade in flag as TRUE.
+	// Sets fade in flag as FALSE.
 	this->fadeIn = 0;
 	// Calculates the face speed for the base color.
 	this->calculateSpeed(color);
@@ -32,8 +32,8 @@ void Fade::calculateSpeed(const FloatColor &color) {
 		);
 }
 
-FloatColor Fade::processEffect(FloatColor &color, const float deltaTime) {
-	FloatColor transitedColor = FloatColor(color);
+void Fade::processEffect(FloatColor &color, const float deltaTime) {
+
 
 	// Updates fade elapsed time.
 	this->elapsedTime = micros() - this->startTime;
@@ -51,7 +51,7 @@ FloatColor Fade::processEffect(FloatColor &color, const float deltaTime) {
 			// Processes the FADE IN effect part.
 
 			// Calculates new color addition after transition.
-			transitedColor = this->transition(
+			this->transition(
 				color, Color(255, 255, 255), deltaTime);
 			
 			// IF elapsed time surpasses fade duration.
@@ -65,7 +65,7 @@ FloatColor Fade::processEffect(FloatColor &color, const float deltaTime) {
 			// Processes the FADE OUT effect part.
 
 			// Calculates new color subtraction after transition.
-			transitedColor = this->transition(color, Color(0, 0, 0), deltaTime);
+			this->transition(color, Color(0, 0, 0), deltaTime);
 
 			// IF elapsed time surpasses fade duration.
 			if(this->elapsedTime >= Fade::fadeDuration) {
@@ -84,6 +84,4 @@ FloatColor Fade::processEffect(FloatColor &color, const float deltaTime) {
 			}
 		}
 	}
-
-	return transitedColor;
 }

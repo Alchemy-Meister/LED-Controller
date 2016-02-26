@@ -23,7 +23,7 @@ const Color SpectrumCycling::spectrumColors[colorSize] = {
 			Color(255, 0, 255)
 		};
 
-FloatColor SpectrumCycling::processEffect(const FloatColor &color,
+void SpectrumCycling::processEffect(FloatColor &color,
 	const float deltaTime)
 {
 	// Updates cycling elapsed time.
@@ -53,7 +53,7 @@ FloatColor SpectrumCycling::processEffect(const FloatColor &color,
 	}
 
 	// Calculates new color subtraction after transition.
-	return this->transition(color, target, deltaTime);
+	this->transition(color, target, deltaTime);
 }
 
 SpectrumCycling::SpectrumCycling() {

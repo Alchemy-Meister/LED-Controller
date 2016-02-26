@@ -23,7 +23,7 @@ class TimeBasedEffect
 	public:
 		void setStartTime(uint32_t currentTime);
 
-		FloatColor transition(const FloatColor &color, const Color &target,
+		void transition(FloatColor &color, const Color &target,
 			const float deltaTime);
 };
 

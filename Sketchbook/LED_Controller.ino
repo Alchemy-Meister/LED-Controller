@@ -238,13 +238,13 @@ void processEffect() {
 	switch(currentEffect) {
 		// Process FADE effect.
 		case FADE:
-			currentColor = fade.processEffect(currentColor, deltaTime);
+			fade.processEffect(currentColor, deltaTime);
 			// Updates PINS with current RGB values.
 			updateColor();
 			break;
 		// Process SPECTRUM CYCLING effect.
 		case SPECTRUM_CYCLING:
-			currentColor = spectrumCycling.processEffect(
+			spectrumCycling.processEffect(
 				currentColor, deltaTime);
 			
 			// Updates PINS with current RGB values.
