@@ -56,11 +56,6 @@ uint8_t redLedValue						= 0;
 uint8_t greenLedValue					= 0;
 uint8_t blueLedValue					= 0;
 
-// RGB color increment or decrement value.
-uint8_t redIncrement;
-uint8_t greenIncrement;
-uint8_t blueIncrement;
-
 // Actual RBG color value.
 float redLedCurrentValue;
 float greenLedCurrentValue;
