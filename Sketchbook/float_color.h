@@ -10,7 +10,7 @@ class FloatColor
 		float green;
 		float blue;
 	public:
-		enum RGB { RED = 1, GREEN = 2, BLUE = 3 };
+		enum RGB { RED, GREEN, BLUE };
 
 		FloatColor();
 		FloatColor(const float red, const float green, const float blue);

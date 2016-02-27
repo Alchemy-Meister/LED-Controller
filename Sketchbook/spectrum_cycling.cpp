@@ -64,10 +64,6 @@ void SpectrumCycling::initializeEffect() {
 	this->elapsedTime = 0;
 }
 
-void SpectrumCycling::setInitializationFlag(const uint8_t initialize) {
-	this->spectrumEffectInitialization = initialize;
-}
-
 void SpectrumCycling::updateColorIndex() {
 	if(this->colorIndex < SpectrumCycling::colorSize - 1) {
 		// IF INDEX hasn't reached array's end increases it.

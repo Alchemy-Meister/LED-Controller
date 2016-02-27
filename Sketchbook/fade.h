@@ -15,6 +15,13 @@
  */
 class Fade : public TimeBasedEffect {
 	private:
+		// Duration of fade ins and outs.
+		static const float fadeDuration;
+		static const float fadeDurationSeconds;
+
+		// Duration of the off time for the breathing part effect.
+		static const float offDuration;
+
 		// Boolean to check if the effect is fade in/out.
 		uint8_t fadeIn;
 		// Boolean to check if the effects needs to breath.
@@ -24,16 +31,7 @@ class Fade : public TimeBasedEffect {
 
 		void calculateSpeed(const FloatColor &color);
 	public:
-		// Duration of fade ins and outs.
-		static const float fadeDuration;
-		static const float fadeDurationSeconds;
-
-		// Duration of the off time for the breathing part effect.
-		static const float offDuration;
-
 		Fade();
-
-		void setFadeStartTime(uint32_t currentTime);
 
 		void initializeEffect(const FloatColor &color, const uint8_t breath);
 		void processEffect(FloatColor &color, const float deltaTime);

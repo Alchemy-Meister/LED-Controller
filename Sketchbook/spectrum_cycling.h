@@ -15,6 +15,14 @@
  */
 class SpectrumCycling:public TimeBasedEffect {
 	private:
+		// Duration for single color transition.
+		static const float transitionDuration;
+		static const float transitionDurationSec;
+
+		// Declares bi-dimensional array for storing spectrum's RGB colors.
+		static const uint8_t colorSize = 16;
+		static const Color spectrumColors[colorSize];
+
 		// Index for accessing RGB color bi-dimensional array.
 		int8_t colorIndex;
 
@@ -29,20 +37,9 @@ class SpectrumCycling:public TimeBasedEffect {
 		uint8_t calculateCompSpeed(const float currentComp,
 			const uint8_t targetComp);
 	public:
-		// Duration for single color transition.
-		static const float transitionDuration;
-		static const float transitionDurationSec;
-
-		// Declares bi-dimensional array for storing spectrum's RGB colors.
-		static const uint8_t colorSize = 16;
-		static const Color spectrumColors[colorSize];
-
 		SpectrumCycling();
 
 		void initializeEffect();
-
-		uint8_t needsInitialization();
-		void setInitializationFlag(const uint8_t initialize);
 		
 		void processEffect(FloatColor &color, const float deltaTime);
 
