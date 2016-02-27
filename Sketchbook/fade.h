@@ -16,11 +16,11 @@
 class Fade : public TimeBasedEffect {
 	private:
 		// Duration of fade ins and outs.
-		static const float fadeDuration;
-		static const float fadeDurationSeconds;
+		static const uint32_t fadeDuration;
+		static const uint8_t fadeDurationSeconds;
 
 		// Duration of the off time for the breathing part effect.
-		static const float offDuration;
+		static const uint32_t offDuration;
 
 		// Boolean to check if the effect is fade in/out.
 		uint8_t fadeIn;

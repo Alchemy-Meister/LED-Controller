@@ -1,5 +1,5 @@
-#ifndef SPECTRUM_CYCLING_H
-#define SPECTRUM_CYCLING_H
+#ifndef SPECTRUM_CYCLE_H
+#define SPECTRUM_CYCLE_H
 
 #include <stdint.h>
 #include <math.h>
@@ -13,11 +13,11 @@
  * This effect loops a RGB color bi-dimensional array, makes a color 
  * transition and then stays in the target color for the same amount of time.
  */
-class SpectrumCycling:public TimeBasedEffect {
+class SpectrumCycle:public TimeBasedEffect {
 	private:
 		// Duration for single color transition.
-		static const float transitionDuration;
-		static const float transitionDurationSec;
+		static const uint32_t transitionDuration;
+		static const uint8_t transitionDurationSec;
 
 		// Declares bi-dimensional array for storing spectrum's RGB colors.
 		static const uint8_t colorSize = 16;
@@ -37,7 +37,7 @@ class SpectrumCycling:public TimeBasedEffect {
 		uint8_t calculateCompSpeed(const float currentComp,
 			const uint8_t targetComp);
 	public:
-		SpectrumCycling();
+		SpectrumCycle();
 
 		void initializeEffect();
 		

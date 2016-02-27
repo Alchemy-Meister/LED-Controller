@@ -3,7 +3,8 @@
 #include "color.h"
 #include "float_color.h"
 #include "fade.h"
-#include "spectrum_cycling.h"
+#include "flash.h"
+#include "spectrum_cycle.h"
 
 // Declares the RGB PINS for Arduino
 const uint8_t RED_PIN					= 3;
@@ -31,7 +32,8 @@ const uint8_t SPECTRUM_CYCLING			= 'J';
 const uint8_t STATIC					= 'K';
 
 Fade fade = Fade();
-SpectrumCycling spectrumCycling = SpectrumCycling();
+SpectrumCycle spectrumCycling = SpectrumCycle();
+Flash flash = Flash();
 
 // Boolean to check if LEDs powered on/off.
 uint8_t ledPower						= 1;

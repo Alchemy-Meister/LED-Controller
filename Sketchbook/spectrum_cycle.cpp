@@ -1,10 +1,10 @@
-#include "spectrum_cycling.h"
+#include "spectrum_cycle.h"
 
-const float SpectrumCycling::transitionDuration = 2000000;
-const float SpectrumCycling::transitionDurationSec = 
-	SpectrumCycling::transitionDuration / 1000000;
+const uint32_t SpectrumCycle::transitionDuration = 2000000;
+const uint8_t SpectrumCycle::transitionDurationSec = 
+	SpectrumCycle::transitionDuration / 1000000;
 
-const Color SpectrumCycling::spectrumColors[colorSize] = {
+const Color SpectrumCycle::spectrumColors[colorSize] = {
 			Color(255, 0, 0),	// Color transition.
 			Color(255, 0, 0),	// Idle color.
 			Color(255, 153, 0),	// Color transition.
@@ -23,7 +23,7 @@ const Color SpectrumCycling::spectrumColors[colorSize] = {
 			Color(255, 0, 255)
 		};
 
-void SpectrumCycling::processEffect(FloatColor &color,
+void SpectrumCycle::processEffect(FloatColor &color,
 	const float deltaTime)
 {
 	// Updates cycling elapsed time.
@@ -31,7 +31,7 @@ void SpectrumCycling::processEffect(FloatColor &color,
 
 	// IF elapsed time surpasses transitionDuration or initialization
 	// flag is enabled.
-	if(this->elapsedTime >= SpectrumCycling::transitionDuration || 
+	if(this->elapsedTime >= SpectrumCycle::transitionDuration || 
 		this->spectrumEffectInitialization) 
 	{
 		// Cleans cycling initialization flag.
@@ -41,7 +41,7 @@ void SpectrumCycling::processEffect(FloatColor &color,
 		this->updateColorIndex();
 		
 		// Retrieves RGB color from the bi-dimensional as color targets.
-		this->target = SpectrumCycling::spectrumColors[this->colorIndex];
+		this->target = SpectrumCycle::spectrumColors[this->colorIndex];
 
 		// Calculates the transition speed.
 		this->calculateSpeed(color, target);
@@ -54,9 +54,9 @@ void SpectrumCycling::processEffect(FloatColor &color,
 	this->transition(color, target, deltaTime);
 }
 
-SpectrumCycling::SpectrumCycling() {}
+SpectrumCycle::SpectrumCycle() {}
 
-void SpectrumCycling::initializeEffect() {
+void SpectrumCycle::initializeEffect() {
 	// Sets initial value of the array access INDEX.
 	this->colorIndex = -1;
 	// Sets effect INITIALIZATION flag as TRUE.
@@ -64,8 +64,8 @@ void SpectrumCycling::initializeEffect() {
 	this->elapsedTime = 0;
 }
 
-void SpectrumCycling::updateColorIndex() {
-	if(this->colorIndex < SpectrumCycling::colorSize - 1) {
+void SpectrumCycle::updateColorIndex() {
+	if(this->colorIndex < SpectrumCycle::colorSize - 1) {
 		// IF INDEX hasn't reached array's end increases it.
 		this->colorIndex++;
 	} else {
@@ -74,7 +74,7 @@ void SpectrumCycling::updateColorIndex() {
 	}
 }
 
-void SpectrumCycling::calculateSpeed(const FloatColor currentColor,
+void SpectrumCycle::calculateSpeed(const FloatColor currentColor,
 	const Color targetColor)
 {
 	this->colorSpeed = Color(
@@ -85,9 +85,9 @@ void SpectrumCycling::calculateSpeed(const FloatColor currentColor,
 			targetColor.getBlue()));
 }
 
-uint8_t SpectrumCycling::calculateCompSpeed(const float currentComp,
+uint8_t SpectrumCycle::calculateCompSpeed(const float currentComp,
 	const uint8_t targetComp)
 {
 	return ceil(abs(currentComp - targetComp) /
-		SpectrumCycling::transitionDurationSec);
+		SpectrumCycle::transitionDurationSec);
 }

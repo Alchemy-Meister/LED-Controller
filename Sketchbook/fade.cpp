@@ -1,9 +1,9 @@
 #include "fade.h"
 
-const float Fade::fadeDuration	= 3000000;
-const float Fade::fadeDurationSeconds = Fade::fadeDuration / 1000000;
+const uint32_t Fade::fadeDuration	= 3000000;
+const uint8_t Fade::fadeDurationSeconds = Fade::fadeDuration / 1000000;
 
-const float Fade::offDuration = 1500000;
+const uint32_t Fade::offDuration = 1500000;
 
 Fade::Fade() {}
 
