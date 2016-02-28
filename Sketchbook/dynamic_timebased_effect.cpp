@@ -1,10 +1,6 @@
-#include "timebased_effect.h"
+#include "dynamic_timebased_effect.h"
 
-void TimeBasedEffect::setStartTime(uint32_t currentTime) {
-	this->startTime = currentTime;
-}
-
-uint8_t TimeBasedEffect::getComponentSpeed(FloatColor::RGB component) const {
+uint8_t DynamicTimeBasedEffect::getComponentSpeed(FloatColor::RGB component) const {
 	switch(component) {
 		case FloatColor::RED:
 			return this->colorSpeed.getRed();
@@ -18,7 +14,7 @@ uint8_t TimeBasedEffect::getComponentSpeed(FloatColor::RGB component) const {
 
 // This function calculates the next color transition, depending on the 
 // target color, and effect speed.
-void TimeBasedEffect::transition(FloatColor &color,
+void DynamicTimeBasedEffect::transition(FloatColor &color,
 	const Color &target, const float deltaTime)
 {
 	color.setRed(this->componentTransition(
@@ -29,10 +25,10 @@ void TimeBasedEffect::transition(FloatColor &color,
 		color.getBlue(), target.getBlue(), deltaTime, FloatColor::BLUE));
 }
 
-float TimeBasedEffect::componentTransition(const float component,
+float DynamicTimeBasedEffect::componentTransition(const float component,
 	const uint8_t targetComp, const float deltaTime,
 	FloatColor::RGB compIdentifier)
- {
+{
  	// IF color needs to increment to reach the target.
 	if(FloatColor::componentIsIncrement(component, targetComp)) {
 		// ADDS relative increment.
@@ -45,4 +41,4 @@ float TimeBasedEffect::componentTransition(const float component,
 		return FloatColor::colorDownLimiter(component - 
 			this->getComponentSpeed(compIdentifier) * deltaTime, targetComp);
 	}	
- }
+}

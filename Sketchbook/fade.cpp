@@ -21,6 +21,10 @@ void Fade::initializeEffect(const FloatColor &color, const uint8_t breath)
 		this->breath = 0;
 }
 
+void Fade::setStartTime(const uint32_t currentTime) {
+	this->startTime = currentTime;
+}
+
 void Fade::calculateSpeed(const FloatColor &color) {
 	this->colorSpeed = Color(
 		ceil(color.getRed() / Fade::fadeDurationSeconds),

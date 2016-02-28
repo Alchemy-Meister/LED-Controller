@@ -2,7 +2,7 @@
 #define FADE_H
 
 #include <math.h>
-#include "timebased_effect.h"
+#include "dynamic_timebased_effect.h"
 #include "float_color.h"
 #include "Arduino.h"
 
@@ -13,7 +13,7 @@
  * off for a determined amount of time and then repeats. If the breathing
  * variable is FALSE this las part is omitted.
  */
-class Fade : public TimeBasedEffect {
+class Fade : public DynamicTimeBasedEffect {
 	private:
 		// Duration of fade ins and outs.
 		static const uint32_t fadeDuration;
@@ -34,6 +34,7 @@ class Fade : public TimeBasedEffect {
 		Fade();
 
 		void initializeEffect(const FloatColor &color, const uint8_t breath);
+		void setStartTime(const uint32_t currentTime);
 		void processEffect(FloatColor &color, const float deltaTime);
 };
 

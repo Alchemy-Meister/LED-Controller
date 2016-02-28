@@ -5,7 +5,7 @@
 #include <math.h>
 #include "color.h"
 #include "float_color.h"
-#include "timebased_effect.h"
+#include "dynamic_timebased_effect.h"
 #include "Arduino.h"
 
 /* SPECTRUM CYCLING EFFECT
@@ -13,7 +13,7 @@
  * This effect loops a RGB color bi-dimensional array, makes a color 
  * transition and then stays in the target color for the same amount of time.
  */
-class SpectrumCycle:public TimeBasedEffect {
+class SpectrumCycle : public DynamicTimeBasedEffect {
 	private:
 		// Duration for single color transition.
 		static const uint32_t transitionDuration;
