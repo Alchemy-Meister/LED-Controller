@@ -30,6 +30,7 @@ const uint8_t FADE						= 'H';
 const uint8_t BREATHING					= 'I';
 const uint8_t SPECTRUM_CYCLING			= 'J';
 const uint8_t STATIC					= 'K';
+const uint8_t FLASH 					= 'L';
 
 Fade fade = Fade();
 SpectrumCycle spectrumCycling = SpectrumCycle();
@@ -171,6 +172,7 @@ void reset() {
 
 	now = micros();
 	fade.setStartTime(now);
+	flash.setStartTime(now);
 }
 
 // This function PROCESSES the STATIC EFFECT.
@@ -212,6 +214,14 @@ void initializeSpectrumCyclingEffect() {
 	reset();
 }
 
+void initializeFlashingEffect() {
+	currentEffect = FLASH;
+
+	flash.initializeEffect(baseColor);
+
+	reset();
+}
+
 // Processes the COMMAND received from SERIAL.
 void process() {
 	switch(code[0]){
@@ -232,6 +242,9 @@ void process() {
 		case STATIC:
 			staticEffect();
 			break;
+		case FLASH:
+			initializeFlashingEffect();
+			break;
 	}
 }
 
@@ -241,18 +254,21 @@ void processEffect() {
 		// Process FADE effect.
 		case FADE:
 			fade.processEffect(currentColor, deltaTime);
-			// Updates PINS with current RGB values.
-			updateColor();
+			break;
+		case FLASH:
+			flash.processEffect(currentColor);
 			break;
 		// Process SPECTRUM CYCLING effect.
 		case SPECTRUM_CYCLING:
 			spectrumCycling.processEffect(
 				currentColor, deltaTime);
-			
-			// Updates PINS with current RGB values.
-			updateColor();
+			break;
+		case STATIC:
+			staticEffect();
 			break;
 	}
+	// Updates PINS with current RGB values.
+	updateColor();
 }
 
 // The iterative function that is executed after setup function.

@@ -2,20 +2,28 @@
 #define FLASH_H
 
 #include <stdint.h>
+#include "color.h"
 #include "float_color.h"
+#include "timebased_effect.h"
 #include "Arduino.h"
 
-class Flash
+class Flash : public TimeBasedEffect
 {
 	private:
+		// Duration of flashing and and off parts.
 		static const uint32_t offDuration;
-		static const uint32_t fashDuration;
+		static const uint32_t flashDuration;
+
+		// Boolean to check if the effect is flashing.
+		uint8_t flashing;
+
+		Color flashColor;
 	public:
 		Flash();
 
-		void initializeEffect();
-
-		void processEffect(FloatColor &color, const float deltaTime);
+		void initializeEffect(const Color &color);
+		void setStartTime(const uint32_t currentTime);
+		void processEffect(FloatColor &color);
 	
 };
 

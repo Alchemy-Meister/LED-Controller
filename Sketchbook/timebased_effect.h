@@ -12,19 +12,6 @@ class TimeBasedEffect
 		uint32_t startTime;
 		// Passed time since effect started in milliseconds.
 		uint32_t elapsedTime;
-
-		Color colorSpeed;
-
-		float componentTransition(const float component,
-			const uint8_t targetComp, const float deltaTime,
-			FloatColor::RGB compIdentifier);
-
-		uint8_t getComponentSpeed(FloatColor::RGB) const;
-	public:
-		void setStartTime(uint32_t currentTime);
-
-		void transition(FloatColor &color, const Color &target,
-			const float deltaTime);
 };
 
 #endif
