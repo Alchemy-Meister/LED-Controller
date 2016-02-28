@@ -10,6 +10,11 @@
         private SerialPort serialPort;
         private SerialModel serialModel;
 
+        public SerialPort GetSerialPortBlah()
+        {
+            return this.serialPort;
+        }
+
         public MainWindowController()
         {
             this.serialModel = new SerialModel();

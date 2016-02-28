@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Drawing;
     using System.Linq;
+    using System.Threading;
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Forms;
@@ -229,11 +230,24 @@
             }
         }
 
+        private void Debug()
+        {
+            while (true)
+            {
+                try
+                {
+                    Console.WriteLine(this.controller.GetSerialPortBlah().ReadLine());
+                }
+                catch (Exception) { }
+            }
+        }
+
         // The function that opens the serial connection and updates de GUI according to the device connection.
         private void ProcessDeviceConnectionGUI()
         {
             textBox.Text = "COM" + this.controller.GetSerialPort();
             this.statusCBox.IsEnabled = true;
+            // new Thread(Debug).Start();
             if (this.controller.IsLedPowered())
             {
                 this.ProcessLedOnGUI();
