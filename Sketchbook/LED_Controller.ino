@@ -31,6 +31,7 @@ const uint8_t BREATHING					= 'I';
 const uint8_t SPECTRUM_CYCLING			= 'J';
 const uint8_t STATIC					= 'K';
 const uint8_t FLASH 					= 'L';
+const uint8_t DOUBLE_FLASH				= 'M';
 
 Fade fade = Fade();
 SpectrumCycle spectrumCycling = SpectrumCycle();
@@ -217,7 +218,7 @@ void initializeSpectrumCyclingEffect() {
 void initializeFlashingEffect() {
 	currentEffect = FLASH;
 
-	flash.initializeEffect(baseColor);
+	flash.initializeEffect(baseColor, code[0] == DOUBLE_FLASH);
 
 	reset();
 }
@@ -242,7 +243,7 @@ void process() {
 		case STATIC:
 			staticEffect();
 			break;
-		case FLASH:
+		case FLASH: case DOUBLE_FLASH:
 			initializeFlashingEffect();
 			break;
 	}
