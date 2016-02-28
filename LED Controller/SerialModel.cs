@@ -22,6 +22,7 @@
                 { "Static", Convert.ToByte('K') },
                 { "Fading", Convert.ToByte('H') },
                 { "Breathing", Convert.ToByte('I') },
+                { "Flashing", Convert.ToByte('L') },
                 { "Spectrum cycling", Convert.ToByte('J') }
             };
 
