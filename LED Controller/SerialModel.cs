@@ -20,10 +20,11 @@
             new Dictionary<string, byte>()
             {
                 { "Static", Convert.ToByte('K') },
-                { "Fading", Convert.ToByte('H') },
-                { "Breathing", Convert.ToByte('I') },
-                { "Flashing", Convert.ToByte('L') },
-                { "Spectrum cycling", Convert.ToByte('J') }
+                { "Fade", Convert.ToByte('H') },
+                { "Breath", Convert.ToByte('I') },
+                { "Flash", Convert.ToByte('L') },
+                { "Double Flash", Convert.ToByte('M') },
+                { "Spectrum cycle", Convert.ToByte('J') }
             };
 
         private bool ledPower = true;
