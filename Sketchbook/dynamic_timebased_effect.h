@@ -2,18 +2,19 @@
 #define DYNAMIC_TIMEBASED_EFFECT
 
 #include <stdint.h>
+#include "color_speed.h"
 #include "timebased_effect.h"
 
 class DynamicTimeBasedEffect : public TimeBasedEffect
 {
 	protected:
-		Color colorSpeed;
+		ColorSpeed colorSpeed;
 
 		float componentTransition(const float component,
 				const uint8_t targetComp, const float deltaTime,
 				FloatColor::RGB compIdentifier);
 
-		uint8_t getComponentSpeed(FloatColor::RGB) const;
+		uint16_t getComponentSpeed(FloatColor::RGB) const;
 	public:
 
 		void transition(FloatColor &color, const Color &target,

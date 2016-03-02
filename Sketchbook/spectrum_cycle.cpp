@@ -1,8 +1,6 @@
 #include "spectrum_cycle.h"
 
 const uint32_t SpectrumCycle::transitionDuration = 2000000;
-const uint8_t SpectrumCycle::transitionDurationSec = 
-	SpectrumCycle::transitionDuration / 1000000;
 
 const Color SpectrumCycle::spectrumColors[colorSize] = {
 			Color(255, 0, 0),	// Color transition.
@@ -23,6 +21,24 @@ const Color SpectrumCycle::spectrumColors[colorSize] = {
 			Color(255, 0, 255)
 		};
 
+SpectrumCycle::SpectrumCycle() {
+	this->currentTransitionDuration = SpectrumCycle::transitionDuration;
+}
+
+void SpectrumCycle::initializeEffect() {
+	// Sets initial value of the array access INDEX.
+	this->colorIndex = -1;
+	// Sets effect INITIALIZATION flag as TRUE.
+	this->spectrumEffectInitialization = 1;
+	this->elapsedTime = 0;
+}
+
+void SpectrumCycle::setSpeed(const float speed) {
+	this->cycleSpeed = speed;
+	this->currentTransitionDuration = SpectrumCycle::transitionDuration /
+		this->cycleSpeed;
+}
+
 void SpectrumCycle::processEffect(FloatColor &color,
 	const float deltaTime)
 {
@@ -31,9 +47,10 @@ void SpectrumCycle::processEffect(FloatColor &color,
 
 	// IF elapsed time surpasses transitionDuration or initialization
 	// flag is enabled.
-	if(this->elapsedTime >= SpectrumCycle::transitionDuration || 
+	if(this->elapsedTime >= this->currentTransitionDuration || 
 		this->spectrumEffectInitialization) 
 	{
+
 		// Cleans cycling initialization flag.
 		this->spectrumEffectInitialization = 0;
 		
@@ -54,16 +71,6 @@ void SpectrumCycle::processEffect(FloatColor &color,
 	this->transition(color, target, deltaTime);
 }
 
-SpectrumCycle::SpectrumCycle() {}
-
-void SpectrumCycle::initializeEffect() {
-	// Sets initial value of the array access INDEX.
-	this->colorIndex = -1;
-	// Sets effect INITIALIZATION flag as TRUE.
-	this->spectrumEffectInitialization = 1;
-	this->elapsedTime = 0;
-}
-
 void SpectrumCycle::updateColorIndex() {
 	if(this->colorIndex < SpectrumCycle::colorSize - 1) {
 		// IF INDEX hasn't reached array's end increases it.
@@ -77,7 +84,7 @@ void SpectrumCycle::updateColorIndex() {
 void SpectrumCycle::calculateSpeed(const FloatColor currentColor,
 	const Color targetColor)
 {
-	this->colorSpeed = Color(
+	this->colorSpeed = ColorSpeed(
 		this->calculateCompSpeed(currentColor.getRed(), targetColor.getRed()),
 		this->calculateCompSpeed(currentColor.getGreen(),
 			targetColor.getGreen()),
@@ -85,9 +92,9 @@ void SpectrumCycle::calculateSpeed(const FloatColor currentColor,
 			targetColor.getBlue()));
 }
 
-uint8_t SpectrumCycle::calculateCompSpeed(const float currentComp,
+uint16_t SpectrumCycle::calculateCompSpeed(const float currentComp,
 	const uint8_t targetComp)
 {
 	return ceil(abs(currentComp - targetComp) /
-		SpectrumCycle::transitionDurationSec);
+		(this->currentTransitionDuration / 1000000.0));
 }

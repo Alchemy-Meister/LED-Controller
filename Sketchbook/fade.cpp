@@ -1,35 +1,60 @@
 #include "fade.h"
 
 const uint32_t Fade::fadeDuration	= 3000000;
-const uint8_t Fade::fadeDurationSeconds = Fade::fadeDuration / 1000000;
-
 const uint32_t Fade::offDuration = 1500000;
 
-Fade::Fade() {}
+Fade::Fade() {
+	this->breathSpeed = 1;
+	this->fadeSpeed = 1;
+	this->currentFadeDuration = Fade::fadeDuration;
+	this->currentOffDuration = Fade::offDuration;
+}
 
 void Fade::initializeEffect(const FloatColor &color, const uint8_t breath)
 {
 	// Sets fade in flag as FALSE.
 	this->fadeIn = 0;
+
+	this->baseColor = FloatColor(color);
+
+	// IF true activates breath flag and updates its speed.
+	if(breath) {
+		this->breath = 1;
+		this->currentFadeDuration = Fade::fadeDuration / this->breathSpeed;
+		this->currentOffDuration = Fade::offDuration / this->breathSpeed;
+	} else {
+		this->breath = 0;
+		this->currentFadeDuration = Fade::fadeDuration / this->fadeSpeed;
+		this->currentOffDuration = Fade::offDuration / this->fadeSpeed;
+	}
+
 	// Calculates the face speed for the base color.
 	this->calculateSpeed(color);
-
-	// IF true activates breath flag.
-	if(breath)
-		this->breath = 1;
-	else
-		this->breath = 0;
 }
 
 void Fade::setStartTime(const uint32_t currentTime) {
 	this->startTime = currentTime;
 }
 
+void Fade::setSpeed(const float speed) {
+	if(this->breath) {
+		this->breathSpeed = speed;
+		this->currentFadeDuration = Fade::fadeDuration / this->breathSpeed;
+		this->currentOffDuration = Fade::offDuration / this->breathSpeed;
+	} else {
+		this->fadeSpeed = speed;
+		this->currentFadeDuration = Fade::fadeDuration / this->fadeSpeed;
+		this->currentOffDuration = Fade::offDuration / this->fadeSpeed;
+	}
+	this->calculateSpeed(this->baseColor);
+}
+
 void Fade::calculateSpeed(const FloatColor &color) {
-	this->colorSpeed = Color(
-		ceil(color.getRed() / Fade::fadeDurationSeconds),
-		ceil(color.getGreen() / Fade::fadeDurationSeconds),
-		ceil(color.getBlue() / Fade::fadeDurationSeconds)
+	uint8_t duration = this->currentFadeDuration / 1000000;
+	this->colorSpeed = ColorSpeed(
+		ceil(color.getRed() / duration),
+		ceil(color.getGreen() / duration),
+		ceil(color.getBlue() / duration)
 		);
 }
 
@@ -41,7 +66,7 @@ void Fade::processEffect(FloatColor &color, const float deltaTime) {
 
 	// Processes the fade in/out effect parts depending on the flag.
 	if(this->breathing) {
-		if(this->elapsedTime >= Fade::offDuration) {
+		if(this->elapsedTime >= this->currentOffDuration) {
 			// ELSE set flag to FADE IN.
 			this->fadeIn = 1;
 			this->breathing = 0;
@@ -57,7 +82,7 @@ void Fade::processEffect(FloatColor &color, const float deltaTime) {
 				color, Color(255, 255, 255), deltaTime);
 			
 			// IF elapsed time surpasses fade duration.
-			if(this->elapsedTime >= Fade::fadeDuration) {
+			if(this->elapsedTime >= this->currentFadeDuration) {
 				// Sets the flag to FADE OUT.
 				this->fadeIn = 0;
 				// Restarts the face initialization time.
@@ -70,7 +95,7 @@ void Fade::processEffect(FloatColor &color, const float deltaTime) {
 			this->transition(color, Color(0, 0, 0), deltaTime);
 
 			// IF elapsed time surpasses fade duration.
-			if(this->elapsedTime >= Fade::fadeDuration) {
+			if(this->elapsedTime >= this->currentFadeDuration) {
 				// IF the breathing flag is enabled.
 				if(this->breath) {
 					// ELSE set flag to BREATHING.

@@ -7,38 +7,46 @@
 #include "spectrum_cycle.h"
 
 // Declares the RGB PINS for Arduino
-const uint8_t RED_PIN					= 3;
-const uint8_t GREEN_PIN					= 5;
-const uint8_t BLUE_PIN					= 6;
+const uint8_t RED_PIN			= 3;
+const uint8_t GREEN_PIN			= 5;
+const uint8_t BLUE_PIN			= 6;
 
 // Declares the RGB WRITE COMMANDS
-const uint8_t WRITE_RED					= 'R';
-const uint8_t WRITE_GREEN				= 'G';
-const uint8_t WRITE_BLUE				= 'B';
+const uint8_t WRITE_RED			= 'R';
+const uint8_t WRITE_GREEN		= 'G';
+const uint8_t WRITE_BLUE		= 'B';
 
 // Declares the RGB READ COMMANDS
-const uint8_t READ_RED					= 'C';
-const uint8_t READ_GREEN 				= 'D';
-const uint8_t READ_BLUE 				= 'E';
+const uint8_t READ_RED			= 'C';
+const uint8_t READ_GREEN 		= 'D';
+const uint8_t READ_BLUE 		= 'E';
 
 // Declares the POWER COMMANDS
-const uint8_t TURN_ON					= 'N';
-const uint8_t TURN_OFF					= 'F';
+const uint8_t TURN_ON			= 'N';
+const uint8_t TURN_OFF			= 'F';
 
 // Declares the EFFECTS COMMANDS
-const uint8_t FADE						= 'H';
-const uint8_t BREATHING					= 'I';
-const uint8_t SPECTRUM_CYCLING			= 'J';
-const uint8_t STATIC					= 'K';
-const uint8_t FLASH 					= 'L';
-const uint8_t DOUBLE_FLASH				= 'M';
+const uint8_t FADE				= 'H';
+const uint8_t BREATHING			= 'I';
+const uint8_t SPECTRUM_CYCLING	= 'J';
+const uint8_t STATIC			= 'K';
+const uint8_t FLASH 			= 'L';
+const uint8_t DOUBLE_FLASH		= 'M';
+
+//Declares the EFFECT SPEED COMMANDS
+const uint8_t SPEED				= 'S';
+const uint8_t TRIPLE			= 'T';
+const uint8_t DOUBLE			= 'U';
+const uint8_t NORMAL			= 'V';
+const uint8_t HALF				= 'W';
+const uint8_t THIRD				= 'X';
 
 Fade fade = Fade();
 SpectrumCycle spectrumCycling = SpectrumCycle();
 Flash flash = Flash();
 
 // Boolean to check if LEDs powered on/off.
-uint8_t ledPower						= 1;
+uint8_t ledPower = 1;
 
 // Base RGB color from witch each effect starts. 
 Color baseColor = Color();
@@ -223,6 +231,36 @@ void initializeFlashingEffect() {
 	reset();
 }
 
+float speedComToFloat() {
+	switch(code[1]) {
+	    case TRIPLE:
+			return 3;
+		case DOUBLE:
+			return 2;
+		case NORMAL:
+			return 1;
+		case HALF:
+			return 0.5;
+		case THIRD:
+			return 0.333;
+	}
+}
+
+void processSpeed() {
+	float speedCom = speedComToFloat();
+	switch(currentEffect) {
+	    case FADE: case BREATHING:
+	    	fade.setSpeed(speedCom);
+	    	break;
+	    case SPECTRUM_CYCLING:
+	    	spectrumCycling.setSpeed(speedCom);
+	      	break;
+	    case FLASH: case DOUBLE_FLASH:
+	    	flash.setSpeed(speedCom);
+	    	break;
+	}
+}
+
 // Processes the COMMAND received from SERIAL.
 void process() {
 	switch(code[0]){
@@ -245,6 +283,9 @@ void process() {
 			break;
 		case FLASH: case DOUBLE_FLASH:
 			initializeFlashingEffect();
+			break;
+		case SPEED:
+			processSpeed();
 			break;
 	}
 }

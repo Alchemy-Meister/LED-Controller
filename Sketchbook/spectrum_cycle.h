@@ -17,11 +17,15 @@ class SpectrumCycle : public DynamicTimeBasedEffect {
 	private:
 		// Duration for single color transition.
 		static const uint32_t transitionDuration;
-		static const uint8_t transitionDurationSec;
 
 		// Declares bi-dimensional array for storing spectrum's RGB colors.
 		static const uint8_t colorSize = 16;
 		static const Color spectrumColors[colorSize];
+
+		// Float scale factor for effect speed.
+		float cycleSpeed;
+
+		uint32_t currentTransitionDuration;
 
 		// Index for accessing RGB color bi-dimensional array.
 		int8_t colorIndex;
@@ -34,12 +38,14 @@ class SpectrumCycle : public DynamicTimeBasedEffect {
 		void calculateSpeed(const FloatColor currentColor,
 			const Color targetColor);
 
-		uint8_t calculateCompSpeed(const float currentComp,
+		uint16_t calculateCompSpeed(const float currentComp,
 			const uint8_t targetComp);
 	public:
 		SpectrumCycle();
 
 		void initializeEffect();
+
+		void setSpeed(const float speed);
 		
 		void processEffect(FloatColor &color, const float deltaTime);
 

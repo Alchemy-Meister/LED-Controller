@@ -17,10 +17,16 @@ class Fade : public DynamicTimeBasedEffect {
 	private:
 		// Duration of fade ins and outs.
 		static const uint32_t fadeDuration;
-		static const uint8_t fadeDurationSeconds;
-
 		// Duration of the off time for the breathing part effect.
 		static const uint32_t offDuration;
+
+		// Float scale factor for effect speed.
+		float fadeSpeed;
+		float breathSpeed;
+
+		// Actual duration of fade ins and outs.
+		uint32_t currentFadeDuration;
+		uint32_t currentOffDuration;
 
 		// Boolean to check if the effect is fade in/out.
 		uint8_t fadeIn;
@@ -29,12 +35,15 @@ class Fade : public DynamicTimeBasedEffect {
 		// Boolean to check if the effect is breathing.
 		uint8_t breathing;
 
+		FloatColor baseColor;
+
 		void calculateSpeed(const FloatColor &color);
 	public:
 		Fade();
 
 		void initializeEffect(const FloatColor &color, const uint8_t breath);
 		void setStartTime(const uint32_t currentTime);
+		void setSpeed(const float speed);
 		void processEffect(FloatColor &color, const float deltaTime);
 };
 

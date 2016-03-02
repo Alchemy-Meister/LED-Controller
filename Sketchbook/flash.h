@@ -15,6 +15,15 @@ class Flash : public TimeBasedEffect
 		static const uint32_t middleOffDuration;
 		static const uint32_t flashDuration;
 
+		// Float scale factor for effect speed.
+		float flashSpeed;
+		float doubleFlashSpeed;
+
+		// Actual duration of flashes.
+		uint32_t currentOffDuration;
+		uint32_t currentMiddleOffDuration;
+		uint32_t currentFlashDuration;
+
 		// Boolean to check if the effect is flashing.
 		uint8_t flashing;
 
@@ -32,6 +41,7 @@ class Flash : public TimeBasedEffect
 
 		void initializeEffect(const Color &color, const uint8_t doubleFash);
 		void setStartTime(const uint32_t currentTime);
+		void setSpeed(const float speed);
 		void processEffect(FloatColor &color);
 	
 };

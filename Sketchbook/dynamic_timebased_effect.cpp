@@ -1,13 +1,13 @@
 #include "dynamic_timebased_effect.h"
 
-uint8_t DynamicTimeBasedEffect::getComponentSpeed(FloatColor::RGB component) const {
+uint16_t DynamicTimeBasedEffect::getComponentSpeed(FloatColor::RGB component) const {
 	switch(component) {
 		case FloatColor::RED:
-			return this->colorSpeed.getRed();
+			return this->colorSpeed.getRedSpeed();
 		case FloatColor::GREEN:
-			return this->colorSpeed.getGreen();
+			return this->colorSpeed.getGreenSpeed();
 		case FloatColor::BLUE:
-			return this->colorSpeed.getBlue();
+			return this->colorSpeed.getBlueSpeed();
 	}
 }
 
