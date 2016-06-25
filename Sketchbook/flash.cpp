@@ -4,12 +4,13 @@ const uint32_t Flash::offDuration = 450000;
 const uint32_t Flash::middleOffDuration = 100000;
 const uint32_t Flash::flashDuration = 100000;
 
-Flash::Flash() {
+Flash::Flash(const LPD8806 strip) {
 	this->flashSpeed = 1;
 	this->doubleFlashSpeed = 1;
 	this->currentOffDuration = Flash::offDuration;
 	this->currentMiddleOffDuration = Flash::middleOffDuration;
 	this->currentFlashDuration = Flash::flashDuration;
+	this->strip = strip;
 }
 
 void Flash::initializeEffect(const Color &color, const uint8_t doubleFlash) {

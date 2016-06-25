@@ -41,7 +41,7 @@ class SpectrumCycle : public DynamicTimeBasedEffect {
 		uint16_t calculateCompSpeed(const float currentComp,
 			const uint8_t targetComp);
 	public:
-		SpectrumCycle();
+		SpectrumCycle(const LPD8806 strip);
 
 		void initializeEffect();
 

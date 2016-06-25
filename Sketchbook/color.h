@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+class FloatColor;
+
 class Color
 {
 	private:
@@ -13,6 +15,7 @@ class Color
 		Color();
 		Color(const uint8_t red, const uint8_t green, const uint8_t blue);
 		Color(const Color &color);
+		Color(const FloatColor &color);
 
 		uint8_t getRed() const;
 		uint8_t getGreen() const;
@@ -21,6 +24,8 @@ class Color
 		void setRed(const uint8_t red);
 		void setGreen(const uint8_t green);
 		void setBlue(const uint8_t blue);
+
+		Color operator/(const int divisor) const;
 };
 
 #endif

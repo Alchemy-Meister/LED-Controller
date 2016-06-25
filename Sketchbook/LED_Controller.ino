@@ -11,6 +11,11 @@ const uint8_t RED_PIN			= 3;
 const uint8_t GREEN_PIN			= 5;
 const uint8_t BLUE_PIN			= 6;
 
+// Declares data and clock used by the LPD8806 micro-controller.
+const uint8_t DATA  = 7;
+// CLOCK must be a PWM pin.
+const uint8_t CLOCK = 9;
+
 // Declares the RGB WRITE COMMANDS
 const uint8_t WRITE_RED			= 'R';
 const uint8_t WRITE_GREEN		= 'G';
@@ -18,8 +23,8 @@ const uint8_t WRITE_BLUE		= 'B';
 
 // Declares the RGB READ COMMANDS
 const uint8_t READ_RED			= 'C';
-const uint8_t READ_GREEN 		= 'D';
-const uint8_t READ_BLUE 		= 'E';
+const uint8_t READ_GREEN		= 'D';
+const uint8_t READ_BLUE			= 'E';
 
 // Declares the POWER COMMANDS
 const uint8_t TURN_ON			= 'N';
@@ -41,12 +46,19 @@ const uint8_t NORMAL			= 'V';
 const uint8_t HALF				= 'W';
 const uint8_t THIRD				= 'X';
 
-Fade fade = Fade();
-SpectrumCycle spectrumCycling = SpectrumCycle();
-Flash flash = Flash();
+uint8_t ledNumber = 48;
+
+LPD8806 strip = LPD8806(ledNumber);
+
+Fade fade = Fade(strip);
+SpectrumCycle spectrumCycling = SpectrumCycle(strip);
+Flash flash = Flash(strip);
 
 // Boolean to check if LEDs powered on/off.
 uint8_t ledPower = 1;
+
+// Boolean to check the use of the LPD8806 library.
+uint8_t singleLEDController = 1;
 
 // Base RGB color from witch each effect starts. 
 Color baseColor = Color();
@@ -87,8 +99,16 @@ void setup() {
 	analogWrite(GREEN_PIN, baseColor.getGreen());
 	analogWrite(BLUE_PIN, baseColor.getBlue());
 
+	// Defines if Single LED Controller is used to render effects.
+	fade.enableSingleLEDController(singleLEDController);
+	spectrumCycling.enableSingleLEDController(singleLEDController);
+	flash.enableSingleLEDController(singleLEDController);
+
 	// Starts serial connection.
 	Serial.begin(rate);
+
+	// Start up the LED strip
+	strip.begin();
 
 	// Initializes actual time.
 	now = micros();
@@ -151,7 +171,7 @@ void turnOnProcess() {
 	ledPower = 1;
 	// Initializes the current effect.
 	switch (currentEffect) {
-	    case BREATHING: case FADE:
+		case BREATHING: case FADE:
 			initializeFadeBreathingEffect();
 			break;
 		case SPECTRUM_CYCLING:
@@ -170,15 +190,25 @@ void initializeCurrentColorValues() {
 
 // This function WRITES into the PINS the current RGB values of the effect.
 void updateColor() {
-	analogWrite(RED_PIN, currentColor.getRed());
-	analogWrite(GREEN_PIN, currentColor.getGreen());
-	analogWrite(BLUE_PIN, currentColor.getBlue());
+	if(singleLEDController){
+		for(int i = 0; i < strip.numPixels(); i++) {
+			strip.setPixelColor(
+				i,
+				currentColor.getRed(),
+				currentColor.getGreen(),
+				currentColor.getBlue()
+			);
+		}
+		strip.show();
+	} else {
+		analogWrite(RED_PIN, currentColor.getRed());
+		analogWrite(GREEN_PIN, currentColor.getGreen());
+		analogWrite(BLUE_PIN, currentColor.getBlue());
+	}
 }
 
 // This function updates PIN values and TIME variables.
 void reset() {
-	updateColor();
-
 	now = micros();
 	fade.setStartTime(now);
 	flash.setStartTime(now);
@@ -207,6 +237,7 @@ void initializeFadeBreathingEffect() {
 	fade.initializeEffect(currentColor, code[0] == BREATHING);
 
 	// Updates PINS values and TIME variables.
+	fade.updateStripColor(Color(currentColor), RED_PIN, GREEN_PIN, BLUE_PIN);
 	reset();
 }
 
@@ -220,6 +251,10 @@ void initializeSpectrumCyclingEffect() {
 	initializeCurrentColorValues();
 
 	// Updates PINS values and TIME variables.
+	spectrumCycling.updateStripColor(
+		Color(currentColor),
+		RED_PIN, GREEN_PIN, BLUE_PIN
+	);
 	reset();
 }
 
@@ -228,12 +263,13 @@ void initializeFlashingEffect() {
 
 	flash.initializeEffect(baseColor, code[0] == DOUBLE_FLASH);
 
+	flash.updateStripColor(Color(currentColor), RED_PIN, GREEN_PIN, BLUE_PIN);
 	reset();
 }
 
 float speedComToFloat() {
 	switch(code[1]) {
-	    case TRIPLE:
+		case TRIPLE:
 			return 3;
 		case DOUBLE:
 			return 2;
@@ -249,15 +285,15 @@ float speedComToFloat() {
 void processSpeed() {
 	float speedCom = speedComToFloat();
 	switch(currentEffect) {
-	    case FADE: case BREATHING:
-	    	fade.setSpeed(speedCom);
-	    	break;
-	    case SPECTRUM_CYCLING:
-	    	spectrumCycling.setSpeed(speedCom);
-	      	break;
-	    case FLASH: case DOUBLE_FLASH:
-	    	flash.setSpeed(speedCom);
-	    	break;
+		case FADE: case BREATHING:
+			fade.setSpeed(speedCom);
+			break;
+		case SPECTRUM_CYCLING:
+			spectrumCycling.setSpeed(speedCom);
+			break;
+		case FLASH: case DOUBLE_FLASH:
+			flash.setSpeed(speedCom);
+			break;
 	}
 }
 
@@ -296,21 +332,30 @@ void processEffect() {
 		// Process FADE effect.
 		case FADE:
 			fade.processEffect(currentColor, deltaTime);
+			fade.updateStripColor(
+				Color(currentColor), RED_PIN, GREEN_PIN, BLUE_PIN
+			);
 			break;
 		case FLASH:
 			flash.processEffect(currentColor);
+			flash.updateStripColor(
+				Color(currentColor), RED_PIN, GREEN_PIN, BLUE_PIN
+			);
 			break;
 		// Process SPECTRUM CYCLING effect.
 		case SPECTRUM_CYCLING:
 			spectrumCycling.processEffect(
 				currentColor, deltaTime);
+			fade.updateStripColor(
+				Color(currentColor), RED_PIN, GREEN_PIN, BLUE_PIN
+			);
 			break;
 		case STATIC:
 			staticEffect();
+			// Updates PINS with current RGB values.
+			updateColor();
 			break;
 	}
-	// Updates PINS with current RGB values.
-	updateColor();
 }
 
 // The iterative function that is executed after setup function.

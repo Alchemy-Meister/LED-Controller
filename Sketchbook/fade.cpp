@@ -3,11 +3,12 @@
 const uint32_t Fade::fadeDuration	= 3000000;
 const uint32_t Fade::offDuration = 1500000;
 
-Fade::Fade() {
+Fade::Fade(const LPD8806 strip) {
 	this->breathSpeed = 1;
 	this->fadeSpeed = 1;
 	this->currentFadeDuration = Fade::fadeDuration;
 	this->currentOffDuration = Fade::offDuration;
+	this->strip = strip;
 }
 
 void Fade::initializeEffect(const FloatColor &color, const uint8_t breath)
@@ -78,8 +79,22 @@ void Fade::processEffect(FloatColor &color, const float deltaTime) {
 			// Processes the FADE IN effect part.
 
 			// Calculates new color addition after transition.
-			this->transition(
-				color, Color(255, 255, 255), deltaTime);
+			if(this->singleLEDController) {
+				this->transition(color,
+					Color(
+						this->LPD8806_MAX,
+						this->LPD8806_MAX,
+						this->LPD8806_MAX
+					), deltaTime
+				);
+			} else {
+				this->transition(color,
+					Color(
+						this->MULTI_MAX,
+						this->MULTI_MAX,
+						this->MULTI_MAX
+					), deltaTime);
+			}
 			
 			// IF elapsed time surpasses fade duration.
 			if(this->elapsedTime >= this->currentFadeDuration) {

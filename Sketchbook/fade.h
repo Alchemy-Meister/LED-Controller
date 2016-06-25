@@ -11,7 +11,7 @@
  * This effect fades in and out for a single color for a specific amount of
  * time. If the breathing variable is TRUE, after the fade out it stays
  * off for a determined amount of time and then repeats. If the breathing
- * variable is FALSE this las part is omitted.
+ * variable is FALSE this last part is omitted.
  */
 class Fade : public DynamicTimeBasedEffect {
 	private:
@@ -39,7 +39,7 @@ class Fade : public DynamicTimeBasedEffect {
 
 		void calculateSpeed(const FloatColor &color);
 	public:
-		Fade();
+		Fade(const LPD8806 strip);
 
 		void initializeEffect(const FloatColor &color, const uint8_t breath);
 		void setStartTime(const uint32_t currentTime);

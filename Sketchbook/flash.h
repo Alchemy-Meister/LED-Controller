@@ -37,7 +37,7 @@ class Flash : public TimeBasedEffect
 
 		Color flashColor;
 	public:
-		Flash();
+		Flash(const LPD8806 strip);
 
 		void initializeEffect(const Color &color, const uint8_t doubleFash);
 		void setStartTime(const uint32_t currentTime);

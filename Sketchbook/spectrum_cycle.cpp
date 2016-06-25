@@ -2,6 +2,7 @@
 
 const uint32_t SpectrumCycle::transitionDuration = 2000000;
 
+// Spectrum colors values for multi led controller HW.
 const Color SpectrumCycle::spectrumColors[colorSize] = {
 			Color(255, 0, 0),	// Color transition.
 			Color(255, 0, 0),	// Idle color.
@@ -21,8 +22,9 @@ const Color SpectrumCycle::spectrumColors[colorSize] = {
 			Color(255, 0, 255)
 		};
 
-SpectrumCycle::SpectrumCycle() {
+SpectrumCycle::SpectrumCycle(const LPD8806 strip) {
 	this->currentTransitionDuration = SpectrumCycle::transitionDuration;
+	this->strip = strip;
 }
 
 void SpectrumCycle::initializeEffect() {
@@ -58,17 +60,22 @@ void SpectrumCycle::processEffect(FloatColor &color,
 		this->updateColorIndex();
 		
 		// Retrieves RGB color from the bi-dimensional as color targets.
-		this->target = SpectrumCycle::spectrumColors[this->colorIndex];
+		if(this->singleLEDController) {
+			this->target = (SpectrumCycle::spectrumColors[this->colorIndex])
+				/ (this->MULTI_MAX / this->LPD8806_MAX);
+		} else {
+			this->target = SpectrumCycle::spectrumColors[this->colorIndex];
+		}
 
 		// Calculates the transition speed.
-		this->calculateSpeed(color, target);
+		this->calculateSpeed(color, this->target);
 
 		// Restarts the transition initialization time.
 		this->startTime = micros();
 	}
 
 	// Calculates new color subtraction after transition.
-	this->transition(color, target, deltaTime);
+	this->transition(color, this->target, deltaTime);
 }
 
 void SpectrumCycle::updateColorIndex() {
