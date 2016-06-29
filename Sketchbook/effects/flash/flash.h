@@ -2,12 +2,10 @@
 #define FLASH_H
 
 #include <stdint.h>
-#include "color.h"
-#include "float_color.h"
-#include "timebased_effect.h"
-#include "Arduino.h"
+#include "color/float_color.h"
+#include "hardware/common/timebased_multi_hw_effect.h"
 
-class Flash : public TimeBasedEffect
+class Flash : public TimeBasedMultiHWEffect
 {
 	private:
 		// Duration of flashing and and off parts.
@@ -39,11 +37,12 @@ class Flash : public TimeBasedEffect
 	public:
 		Flash(const LPD8806 strip);
 
+		void initializeEffect();
 		void initializeEffect(const Color &color, const uint8_t doubleFash);
 		void setStartTime(const uint32_t currentTime);
 		void setSpeed(const float speed);
 		void processEffect(FloatColor &color);
-	
+
 };
 
 #endif

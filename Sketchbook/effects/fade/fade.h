@@ -2,9 +2,7 @@
 #define FADE_H
 
 #include <math.h>
-#include "dynamic_timebased_effect.h"
-#include "float_color.h"
-#include "Arduino.h"
+#include "hardware/common/dynamic_timebased_multi_hw_effect.h"
 
 /* FADE AND BREATHING EFFECTS.
  * ------------------------------
@@ -13,7 +11,7 @@
  * off for a determined amount of time and then repeats. If the breathing
  * variable is FALSE this last part is omitted.
  */
-class Fade : public DynamicTimeBasedEffect {
+class Fade : public DynamicTimeBasedMultiHWEffect {
 	private:
 		// Duration of fade ins and outs.
 		static const uint32_t fadeDuration;
@@ -41,6 +39,7 @@ class Fade : public DynamicTimeBasedEffect {
 	public:
 		Fade(const LPD8806 strip);
 
+		void initializeEffect();
 		void initializeEffect(const FloatColor &color, const uint8_t breath);
 		void setStartTime(const uint32_t currentTime);
 		void setSpeed(const float speed);

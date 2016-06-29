@@ -6,11 +6,14 @@ ColorSpeed::ColorSpeed() {
 	this->blue = 0;
 }
 
-ColorSpeed::ColorSpeed(const uint16_t red, const uint16_t green, const uint16_t blue) {
+ColorSpeed::ColorSpeed(const uint16_t red, const uint16_t green,
+	const uint16_t blue)
+{
 	this->red = red;
 	this->green = green;
 	this->blue = blue;
 }
+
 ColorSpeed::ColorSpeed(const ColorSpeed &colorSpeed) {
 	this->red = colorSpeed.red;
 	this->green = colorSpeed.green;

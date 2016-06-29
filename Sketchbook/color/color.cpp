@@ -56,3 +56,25 @@ Color Color::operator/(const int divisor) const {
 		this->blue / divisor
 	);
 }
+
+Color Color::colorFromWheel(const uint16_t wheelPosition, Precision range) {
+	Color returnColor;
+	switch(wheelPosition / range) {
+		case 0:
+			returnColor.setRed((range - 1) - wheelPosition % range);
+			returnColor.setGreen(wheelPosition % range);
+			returnColor.setBlue(0);
+			break; 
+		case 1:
+			returnColor.setRed(0);
+			returnColor.setGreen((range - 1) - wheelPosition % range);
+			returnColor.setBlue(wheelPosition % range);
+			break; 
+		case 2:
+			returnColor.setRed(wheelPosition % range);
+			returnColor.setGreen(0);
+			returnColor.setBlue((range - 1) - wheelPosition % range);
+			break; 
+	}
+	return returnColor;
+}

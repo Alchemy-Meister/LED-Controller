@@ -245,7 +245,7 @@ void LPD8806::updateLength(uint16_t n) {
   // 'begun' state does not change -- pins retain prior modes
 }
 
-uint16_t LPD8806::numPixels(void) {
+uint16_t LPD8806::numPixels(void) const {
   return numLEDs;
 }
 
@@ -280,13 +280,6 @@ void LPD8806::show(void) {
   }
 }
 
-// Convert separate R,G,B into combined 32-bit GRB color:
-uint32_t LPD8806::Color(byte r, byte g, byte b) {
-  return ((uint32_t)(g | 0x80) << 16) |
-         ((uint32_t)(r | 0x80) <<  8) |
-                     b | 0x80 ;
-}
-
 // Set pixel color from separate 7-bit R, G, B components:
 void LPD8806::setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b) {
   if(n < numLEDs) { // Arrays are 0-indexed, thus NOT '<='
@@ -304,6 +297,15 @@ void LPD8806::setPixelColor(uint16_t n, uint32_t c) {
     *p++ = (c >> 16) | 0x80;
     *p++ = (c >>  8) | 0x80;
     *p++ =  c        | 0x80;
+  }
+}
+
+void LPD8806::setPixelColor(uint16_t n, const Color &c) {
+  if(n < numLEDs) { // Arrays are 0-indexed, thus NOT '<='
+    uint8_t *p = &pixels[n * 3];
+    *p++ = c.getGreen() | 0x80;
+    *p++ = c.getRed()   | 0x80;
+    *p++ = c.getBlue()  | 0x80;
   }
 }
 

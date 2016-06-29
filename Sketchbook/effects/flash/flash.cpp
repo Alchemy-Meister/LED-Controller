@@ -4,24 +4,28 @@ const uint32_t Flash::offDuration = 450000;
 const uint32_t Flash::middleOffDuration = 100000;
 const uint32_t Flash::flashDuration = 100000;
 
-Flash::Flash(const LPD8806 strip) {
+Flash::Flash(const LPD8806 strip) : TimeBasedMultiHWEffect(strip) {
 	this->flashSpeed = 1;
 	this->doubleFlashSpeed = 1;
 	this->currentOffDuration = Flash::offDuration;
 	this->currentMiddleOffDuration = Flash::middleOffDuration;
 	this->currentFlashDuration = Flash::flashDuration;
-	this->strip = strip;
+}
+
+void Flash::initializeEffect() {
+	this->flashing = 0;
+	this->firstFlash = 1;
 }
 
 void Flash::initializeEffect(const Color &color, const uint8_t doubleFlash) {
-	this->flashing = 0;
-	this->firstFlash = 1;
+	Flash::initializeEffect();
+	
 	this->flashColor = color;
 
 	if(doubleFlash) {
 		this->doubleFlash = 1;
 		this->currentOffDuration = Flash::offDuration / this->doubleFlashSpeed;
-		this->currentMiddleOffDuration = Flash::middleOffDuration / 
+		this->currentMiddleOffDuration = Flash::middleOffDuration /
 			this->doubleFlashSpeed;
 		this->currentFlashDuration = Flash::flashDuration /
 			this->doubleFlashSpeed;
@@ -42,7 +46,7 @@ void Flash::setSpeed(const float speed) {
 	if(this->doubleFlash) {
 		this->doubleFlashSpeed = speed;
 		this->currentOffDuration = Flash::offDuration / this->doubleFlashSpeed;
-		this->currentMiddleOffDuration = Flash::middleOffDuration / 
+		this->currentMiddleOffDuration = Flash::middleOffDuration /
 			this->doubleFlashSpeed;
 		this->currentFlashDuration = Flash::flashDuration /
 			this->doubleFlashSpeed;
@@ -71,7 +75,7 @@ void Flash::processEffect(FloatColor &color) {
 	} else {
 		if(this->flashing) {
 			color = FloatColor(this->flashColor);
-			
+
 			if(this->elapsedTime >= this->currentFlashDuration) {
 				if(this->doubleFlash && this->firstFlash) {
 					this->middleOff = 1;

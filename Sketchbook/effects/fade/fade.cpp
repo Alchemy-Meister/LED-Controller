@@ -3,18 +3,21 @@
 const uint32_t Fade::fadeDuration	= 3000000;
 const uint32_t Fade::offDuration = 1500000;
 
-Fade::Fade(const LPD8806 strip) {
+Fade::Fade(const LPD8806 strip) : DynamicTimeBasedMultiHWEffect(strip) {
 	this->breathSpeed = 1;
 	this->fadeSpeed = 1;
 	this->currentFadeDuration = Fade::fadeDuration;
 	this->currentOffDuration = Fade::offDuration;
-	this->strip = strip;
 }
 
-void Fade::initializeEffect(const FloatColor &color, const uint8_t breath)
-{
+void Fade::initializeEffect() {
 	// Sets fade in flag as FALSE.
 	this->fadeIn = 0;
+}
+
+void Fade::initializeEffect(const FloatColor &color, const uint8_t breath) {
+
+	Fade::initializeEffect();
 
 	this->baseColor = FloatColor(color);
 
@@ -60,8 +63,6 @@ void Fade::calculateSpeed(const FloatColor &color) {
 }
 
 void Fade::processEffect(FloatColor &color, const float deltaTime) {
-
-
 	// Updates fade elapsed time.
 	this->elapsedTime = micros() - this->startTime;
 
@@ -79,23 +80,23 @@ void Fade::processEffect(FloatColor &color, const float deltaTime) {
 			// Processes the FADE IN effect part.
 
 			// Calculates new color addition after transition.
-			if(this->singleLEDController) {
+			if(this->multiLEDController) {
 				this->transition(color,
 					Color(
-						this->LPD8806_MAX,
-						this->LPD8806_MAX,
-						this->LPD8806_MAX
+						LPD8806Effect::MAX_BRIGTHNESS,
+						LPD8806Effect::MAX_BRIGTHNESS,
+						LPD8806Effect::MAX_BRIGTHNESS
 					), deltaTime
 				);
 			} else {
 				this->transition(color,
 					Color(
-						this->MULTI_MAX,
-						this->MULTI_MAX,
-						this->MULTI_MAX
+						RGBLedStrip::MAX_BRIGTHNESS,
+						RGBLedStrip::MAX_BRIGTHNESS,
+						RGBLedStrip::MAX_BRIGTHNESS
 					), deltaTime);
 			}
-			
+
 			// IF elapsed time surpasses fade duration.
 			if(this->elapsedTime >= this->currentFadeDuration) {
 				// Sets the flag to FADE OUT.

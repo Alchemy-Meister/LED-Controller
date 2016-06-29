@@ -22,9 +22,10 @@ const Color SpectrumCycle::spectrumColors[colorSize] = {
 			Color(255, 0, 255)
 		};
 
-SpectrumCycle::SpectrumCycle(const LPD8806 strip) {
+SpectrumCycle::SpectrumCycle(const LPD8806 strip)
+: DynamicTimeBasedMultiHWEffect(strip)
+{
 	this->currentTransitionDuration = SpectrumCycle::transitionDuration;
-	this->strip = strip;
 }
 
 void SpectrumCycle::initializeEffect() {
@@ -36,9 +37,7 @@ void SpectrumCycle::initializeEffect() {
 }
 
 void SpectrumCycle::setSpeed(const float speed) {
-	this->cycleSpeed = speed;
-	this->currentTransitionDuration = SpectrumCycle::transitionDuration /
-		this->cycleSpeed;
+	this->currentTransitionDuration = SpectrumCycle::transitionDuration / speed;
 }
 
 void SpectrumCycle::processEffect(FloatColor &color,
@@ -49,20 +48,20 @@ void SpectrumCycle::processEffect(FloatColor &color,
 
 	// IF elapsed time surpasses transitionDuration or initialization
 	// flag is enabled.
-	if(this->elapsedTime >= this->currentTransitionDuration || 
-		this->spectrumEffectInitialization) 
+	if(this->elapsedTime >= this->currentTransitionDuration ||
+		this->spectrumEffectInitialization)
 	{
 
 		// Cleans cycling initialization flag.
 		this->spectrumEffectInitialization = 0;
-		
+
 		// Updates bi-dimensional array accessing INDEX.
 		this->updateColorIndex();
-		
+
 		// Retrieves RGB color from the bi-dimensional as color targets.
-		if(this->singleLEDController) {
+		if(this->multiLEDController) {
 			this->target = (SpectrumCycle::spectrumColors[this->colorIndex])
-				/ (this->MULTI_MAX / this->LPD8806_MAX);
+				/ (RGBLedStrip::MAX_BRIGTHNESS / LPD8806Effect::MAX_BRIGTHNESS);
 		} else {
 			this->target = SpectrumCycle::spectrumColors[this->colorIndex];
 		}

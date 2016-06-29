@@ -43,6 +43,8 @@ float FloatColor::getComponent(RGB component) const {
 			return this->green;
 		case BLUE:
 			return this->blue;
+		default:
+			return -1;
 	}
 }
 
@@ -100,7 +102,7 @@ float FloatColor::colorDownLimiter(const float color, const uint8_t limiter) {
 	return color;
 }
 
-// This function returns a boolean flag to check if the input needs to 
+// This function returns a boolean flag to check if the input needs to
 // increment or decrement to reach the target value.
 uint8_t FloatColor::componentIsIncrement(const float color,
 	const uint8_t target)

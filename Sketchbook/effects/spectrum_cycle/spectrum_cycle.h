@@ -3,17 +3,14 @@
 
 #include <stdint.h>
 #include <math.h>
-#include "color.h"
-#include "float_color.h"
-#include "dynamic_timebased_effect.h"
-#include "Arduino.h"
+#include "hardware/common/dynamic_timebased_multi_hw_effect.h"
 
 /* SPECTRUM CYCLING EFFECT
  * ------------------------------
- * This effect loops a RGB color bi-dimensional array, makes a color 
+ * This effect loops a RGB color bi-dimensional array, makes a color
  * transition and then stays in the target color for the same amount of time.
  */
-class SpectrumCycle : public DynamicTimeBasedEffect {
+class SpectrumCycle : public DynamicTimeBasedMultiHWEffect {
 	private:
 		// Duration for single color transition.
 		static const uint32_t transitionDuration;
@@ -21,9 +18,6 @@ class SpectrumCycle : public DynamicTimeBasedEffect {
 		// Declares bi-dimensional array for storing spectrum's RGB colors.
 		static const uint8_t colorSize = 16;
 		static const Color spectrumColors[colorSize];
-
-		// Float scale factor for effect speed.
-		float cycleSpeed;
 
 		uint32_t currentTransitionDuration;
 
@@ -46,7 +40,7 @@ class SpectrumCycle : public DynamicTimeBasedEffect {
 		void initializeEffect();
 
 		void setSpeed(const float speed);
-		
+
 		void processEffect(FloatColor &color, const float deltaTime);
 
 		void updateColorIndex();

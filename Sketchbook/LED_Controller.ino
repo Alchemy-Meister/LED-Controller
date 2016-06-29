@@ -1,13 +1,17 @@
+#include <Arduino.h>
+
 // LED_Controller.ino
 
-#include "color.h"
-#include "float_color.h"
-#include "fade.h"
-#include "flash.h"
-#include "spectrum_cycle.h"
+#include "SPI.h"
+#include "color/color.h"
+#include "color/float_color.h"
+#include "effects/fade/fade.h"
+#include "effects/flash/flash.h"
+#include "effects/rainbow_spin/rainbow_spin.h"
+#include "effects/spectrum_cycle/spectrum_cycle.h"
 
 // Declares the RGB PINS for Arduino
-const uint8_t RED_PIN			= 3;
+const uint8_t RED_PIN				= 3;
 const uint8_t GREEN_PIN			= 5;
 const uint8_t BLUE_PIN			= 6;
 
@@ -17,34 +21,35 @@ const uint8_t DATA  = 7;
 const uint8_t CLOCK = 9;
 
 // Declares the RGB WRITE COMMANDS
-const uint8_t WRITE_RED			= 'R';
-const uint8_t WRITE_GREEN		= 'G';
-const uint8_t WRITE_BLUE		= 'B';
+const uint8_t WRITE_RED					= 'R';
+const uint8_t WRITE_GREEN				= 'G';
+const uint8_t WRITE_BLUE				= 'B';
 
 // Declares the RGB READ COMMANDS
-const uint8_t READ_RED			= 'C';
-const uint8_t READ_GREEN		= 'D';
-const uint8_t READ_BLUE			= 'E';
+const uint8_t READ_RED					= 'C';
+const uint8_t READ_GREEN				= 'D';
+const uint8_t READ_BLUE					= 'E';
 
 // Declares the POWER COMMANDS
-const uint8_t TURN_ON			= 'N';
-const uint8_t TURN_OFF			= 'F';
+const uint8_t TURN_ON						= 'N';
+const uint8_t TURN_OFF					= 'F';
 
 // Declares the EFFECTS COMMANDS
-const uint8_t FADE				= 'H';
-const uint8_t BREATHING			= 'I';
+const uint8_t FADE							= 'H';
+const uint8_t BREATHING					= 'I';
 const uint8_t SPECTRUM_CYCLING	= 'J';
-const uint8_t STATIC			= 'K';
-const uint8_t FLASH 			= 'L';
-const uint8_t DOUBLE_FLASH		= 'M';
+const uint8_t STATIC						= 'K';
+const uint8_t FLASH 						= 'L';
+const uint8_t DOUBLE_FLASH			= 'M';
+const uint8_t RAINBOW_SPIN			= 'O';
 
 //Declares the EFFECT SPEED COMMANDS
-const uint8_t SPEED				= 'S';
-const uint8_t TRIPLE			= 'T';
-const uint8_t DOUBLE			= 'U';
-const uint8_t NORMAL			= 'V';
-const uint8_t HALF				= 'W';
-const uint8_t THIRD				= 'X';
+const uint8_t SPEED							= 'S';
+const uint8_t TRIPLE						= 'T';
+const uint8_t DOUBLE						= 'U';
+const uint8_t NORMAL						= 'V';
+const uint8_t HALF							= 'W';
+const uint8_t THIRD							= 'X';
 
 uint8_t ledNumber = 48;
 
@@ -53,6 +58,8 @@ LPD8806 strip = LPD8806(ledNumber);
 Fade fade = Fade(strip);
 SpectrumCycle spectrumCycling = SpectrumCycle(strip);
 Flash flash = Flash(strip);
+RainbowSpin rainbowSpin = RainbowSpin(strip);
+
 
 // Boolean to check if LEDs powered on/off.
 uint8_t ledPower = 1;
@@ -60,7 +67,7 @@ uint8_t ledPower = 1;
 // Boolean to check the use of the LPD8806 library.
 uint8_t singleLEDController = 1;
 
-// Base RGB color from witch each effect starts. 
+// Base RGB color from witch each effect starts.
 Color baseColor = Color();
 
 // Actual RBG color value.
@@ -165,7 +172,7 @@ void readPin() {
 	}
 }
 
-// This function restarts the effect and resumes the effect process. 
+// This function restarts the effect and resumes the effect process.
 void turnOnProcess() {
 	// Activates the POWER ON flag to resume effect procedure.
 	ledPower = 1;
@@ -173,6 +180,9 @@ void turnOnProcess() {
 	switch (currentEffect) {
 		case BREATHING: case FADE:
 			initializeFadeBreathingEffect();
+			break;
+		case RAINBOW_SPIN:
+			initializeRainbowSpinEffect();
 			break;
 		case SPECTRUM_CYCLING:
 			initializeSpectrumCyclingEffect();
@@ -191,7 +201,7 @@ void initializeCurrentColorValues() {
 // This function WRITES into the PINS the current RGB values of the effect.
 void updateColor() {
 	if(singleLEDController){
-		for(int i = 0; i < strip.numPixels(); i++) {
+		for(uint16_t i = 0; i < strip.numPixels(); i++) {
 			strip.setPixelColor(
 				i,
 				currentColor.getRed(),
@@ -218,19 +228,19 @@ void reset() {
 void staticEffect() {
 	// Sets current effect to STATIC.
 	currentEffect = STATIC;
-	
-	// Updates current RGB values with the base color.	
+
+	// Updates current RGB values with the base color.
 	initializeCurrentColorValues();
 
 	// Updates PINS with current RGB values.
-	updateColor();	
+	updateColor();
 }
 
 // This function INITIALIZES the FADE and BREATHING EFFECTS.
 void initializeFadeBreathingEffect() {
 	// Sets current effect to FADE.
 	currentEffect = FADE;
-	
+
 	// Updates current RGB values with the base color.
 	initializeCurrentColorValues();
 
@@ -246,7 +256,7 @@ void initializeSpectrumCyclingEffect() {
 	// Sets current effect to SPECTRUM CYCLING.
 	currentEffect = SPECTRUM_CYCLING;
 	spectrumCycling.initializeEffect();
-	
+
 	// Updates current RGB values with the base color.
 	initializeCurrentColorValues();
 
@@ -267,6 +277,15 @@ void initializeFlashingEffect() {
 	reset();
 }
 
+void initializeRainbowSpinEffect() {
+	currentEffect = RAINBOW_SPIN;
+
+	rainbowSpin.initializeEffect();
+	rainbowSpin.processEffect();
+
+	reset();
+}
+
 float speedComToFloat() {
 	switch(code[1]) {
 		case TRIPLE:
@@ -279,6 +298,8 @@ float speedComToFloat() {
 			return 0.5;
 		case THIRD:
 			return 0.333;
+		default:
+			return 0;
 	}
 }
 
@@ -320,6 +341,9 @@ void process() {
 		case FLASH: case DOUBLE_FLASH:
 			initializeFlashingEffect();
 			break;
+		case RAINBOW_SPIN:
+			initializeRainbowSpinEffect();
+			break;
 		case SPEED:
 			processSpeed();
 			break;
@@ -349,6 +373,9 @@ void processEffect() {
 			fade.updateStripColor(
 				Color(currentColor), RED_PIN, GREEN_PIN, BLUE_PIN
 			);
+			break;
+		case RAINBOW_SPIN:
+			rainbowSpin.processEffect();
 			break;
 		case STATIC:
 			staticEffect();

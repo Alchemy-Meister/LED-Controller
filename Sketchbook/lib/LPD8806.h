@@ -1,9 +1,15 @@
+#ifndef LPD8806_H
+#define LPD8806_H
+
 #if (ARDUINO >= 100)
  #include <Arduino.h>
 #else
  #include <WProgram.h>
  #include <pins_arduino.h>
 #endif
+
+#include "color/color.h"
+
 
 class LPD8806 {
 
@@ -16,14 +22,14 @@ class LPD8806 {
     begin(void),
     setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b),
     setPixelColor(uint16_t n, uint32_t c),
+    setPixelColor(uint16_t n, const Color &c),
     show(void),
     updatePins(uint8_t dpin, uint8_t cpin), // Change pins, configurable
     updatePins(void),                       // Change pins, hardware SPI
     updateLength(uint16_t n);               // Change strip length
   uint16_t
-    numPixels(void);
+    numPixels(void) const;
   uint32_t
-    Color(byte, byte, byte),
     getPixelColor(uint16_t n);
 
  private:
@@ -47,3 +53,5 @@ class LPD8806 {
     hardwareSPI, // If 'true', using hardware SPI
     begun;       // If 'true', begin() method was previously invoked
 };
+
+#endif
