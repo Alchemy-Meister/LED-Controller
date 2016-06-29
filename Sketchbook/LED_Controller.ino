@@ -65,7 +65,7 @@ RainbowSpin rainbowSpin = RainbowSpin(strip);
 uint8_t ledPower = 1;
 
 // Boolean to check the use of the LPD8806 library.
-uint8_t singleLEDController = 1;
+uint8_t individualLEDController = 1;
 
 // Base RGB color from witch each effect starts.
 Color baseColor = Color();
@@ -107,9 +107,9 @@ void setup() {
 	analogWrite(BLUE_PIN, baseColor.getBlue());
 
 	// Defines if Single LED Controller is used to render effects.
-	fade.enableSingleLEDController(singleLEDController);
-	spectrumCycling.enableSingleLEDController(singleLEDController);
-	flash.enableSingleLEDController(singleLEDController);
+	fade.enableSingleLEDController(individualLEDController);
+	spectrumCycling.enableSingleLEDController(individualLEDController);
+	flash.enableSingleLEDController(individualLEDController);
 
 	// Starts serial connection.
 	Serial.begin(rate);
@@ -147,9 +147,16 @@ void writeOnPin() {
 			ledPower = 0;
 
 			// Writes 0 value into the PINs to turn off the LEDs.
-			analogWrite(RED_PIN, 0);
-			analogWrite(GREEN_PIN, 0);
-			analogWrite(BLUE_PIN, 0);
+			if(individualLEDController) {
+				for(uint16_t i = 0; i < strip.numPixels(); i++) {
+					strip.setPixelColor(i, 0);
+				}
+				strip.show();
+			} else {
+				analogWrite(RED_PIN, 0);
+				analogWrite(GREEN_PIN, 0);
+				analogWrite(BLUE_PIN, 0);
+			}
 			break;
 	}
 }
@@ -200,7 +207,7 @@ void initializeCurrentColorValues() {
 
 // This function WRITES into the PINS the current RGB values of the effect.
 void updateColor() {
-	if(singleLEDController){
+	if(individualLEDController){
 		for(uint16_t i = 0; i < strip.numPixels(); i++) {
 			strip.setPixelColor(
 				i,
