@@ -20,6 +20,13 @@ const uint8_t DATA  = 7;
 // CLOCK must be a PWM pin.
 const uint8_t CLOCK = 9;
 
+// Declares HANDSHAKE COMMANDS
+const uint8_t SYN_IN						= 0x01;
+const uint8_t ACK_IN						= 0xFF;
+
+// Declares MODEL COMMAND
+const uint8_t MODEL							= 'P';
+
 // Declares the RGB WRITE COMMANDS
 const uint8_t WRITE_RED					= 'R';
 const uint8_t WRITE_GREEN				= 'G';
@@ -51,6 +58,20 @@ const uint8_t NORMAL						= 'V';
 const uint8_t HALF							= 'W';
 const uint8_t THIRD							= 'X';
 
+const uint32_t handShakeTime = 1000000;
+
+// Boolean to check if serial authentication has been established.
+uint8_t handShakeEstablished = 0;
+uint8_t synCheck = 0;
+uint32_t handShakeStart;
+
+// Boolean to check if LEDs powered on/off.
+uint8_t ledPower = 1;
+
+// Boolean to check the use of the LPD8806 library.
+uint8_t individualLEDController = 1;
+
+// Number of LEDs connected to the strip.
 uint8_t ledNumber = 48;
 
 LPD8806 strip = LPD8806(ledNumber);
@@ -59,13 +80,6 @@ Fade fade = Fade(strip);
 SpectrumCycle spectrumCycling = SpectrumCycle(strip);
 Flash flash = Flash(strip);
 RainbowSpin rainbowSpin = RainbowSpin(strip);
-
-
-// Boolean to check if LEDs powered on/off.
-uint8_t ledPower = 1;
-
-// Boolean to check the use of the LPD8806 library.
-uint8_t individualLEDController = 1;
 
 // Base RGB color from witch each effect starts.
 Color baseColor = Color();
@@ -119,6 +133,7 @@ void setup() {
 
 	// Initializes actual time.
 	now = micros();
+	deltaTime = 0;
 }
 
 // This function WRITES values into RGB pins depending on the received COMMAND.
@@ -325,11 +340,41 @@ void processSpeed() {
 	}
 }
 
+void processModel() {
+	if(individualLEDController) {
+		Serial.write(Color::SIGNED_RANGE - 1);
+	} else {
+		Serial.write(Color::UNSIGNED_RANGE - 1);
+	}
+}
+
+void processHandShake() {
+	if(micros() - handShakeStart >= handShakeTime) {
+		synCheck = 0;
+	}
+	switch (code[0]) {
+		case SYN_IN:
+			synCheck = 1;
+			Serial.write(ACK_IN);
+			handShakeStart = micros();
+			break;
+		case ACK_IN:
+			if(synCheck) {
+				handShakeEstablished = 1;
+			}
+			break;
+	}
+}
+
 // Processes the COMMAND received from SERIAL.
 void process() {
 	switch(code[0]){
+		case SYN_IN:
+			processHandShake();
+			break;
 		case TURN_ON:
 			turnOnProcess();
+			break;
 		case WRITE_RED: case WRITE_GREEN: case WRITE_BLUE: case TURN_OFF:
 			writeOnPin();
 			break;
@@ -353,6 +398,9 @@ void process() {
 			break;
 		case SPEED:
 			processSpeed();
+			break;
+		case MODEL:
+			processModel();
 			break;
 	}
 }
@@ -405,7 +453,11 @@ void loop() {
 		} else {
 			// When the new line is received processes the COMMAND.
 			index = 0;
-			process();
+			if(handShakeEstablished) {
+				process();
+			} else {
+				processHandShake();
+			}
 		}
 	}
 
