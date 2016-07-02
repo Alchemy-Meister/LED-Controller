@@ -20,8 +20,8 @@
             this.serialPort = new SerialPort(
                 SerialModel.COM + this.serialModel.GetSerialPortNumber(),
                 SerialModel.BaudRate);
-            this.serialPort.ReadTimeout = 100;
-            this.serialPort.WriteTimeout = 100;
+            this.serialPort.ReadTimeout = 500;
+            this.serialPort.WriteTimeout = 500;
         }
 
         public void InitializeDevice()
@@ -43,6 +43,7 @@
         public void CloseSerialPort()
         {
             this.serialPort.Close();
+            this.serialPort.Dispose();
         }
 
         public bool IsSerialPortOpened()
@@ -50,9 +51,17 @@
             return this.serialPort != null ? this.serialPort.IsOpen : false;
         }
 
-        public Dictionary<string, byte> GetEffectList()
+        public Dictionary<string, byte> GetEffectList(short model)
         {
-            return this.serialModel.GetEffectList();
+            switch (model)
+            {
+                case (short) SerialModel.models.LPD8805:
+                    return this.serialModel.GetEffectList(SerialModel.models.LPD8805);
+                case (short) SerialModel.models.LED5050:
+                    return this.serialModel.GetEffectList(SerialModel.models.LED5050);
+                default:
+                    return null;
+            }
         }
 
         public Dictionary<string, byte> GetStatusList()
@@ -133,7 +142,7 @@
                         found = true;
                         short startIndex = (short)(name.LastIndexOf("M") + 1);
                         short endIndex = (short)name.LastIndexOf(")");
-                        
+
                         // The maximum number of COM and LPT ports that Windows NT supports is 256
                         this.serialModel.SetSerialPortNumber(
                             Convert.ToInt16(name.Substring(startIndex, endIndex - startIndex)));
@@ -144,6 +153,49 @@
             }
 
             return this.serialModel.GetSerialPortNumber();
+        }
+
+        public bool HandShake()
+        {
+            try
+            {
+                if (this.SendReadMessage((byte)SerialModel.handShake.SYN).Equals((byte)SerialModel.handShake.ACK))
+                {
+                    this.SendWriteMessage((byte)SerialModel.handShake.ACK);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (TimeoutException)
+            {
+                return false;
+            }
+        }
+
+        public void UpdateModel()
+        {
+            short? model = this.SendReadMessage(Convert.ToByte('P'));
+            Console.WriteLine(model);
+            if(model != null)
+            {
+                switch(model)
+                {
+                    case (short) SerialModel.models.LPD8805:
+                        this.serialModel.SetModel(SerialModel.models.LPD8805);
+                        break;
+                    case (short) SerialModel.models.LED5050:
+                        this.serialModel.SetModel(SerialModel.models.LED5050);
+                        break;
+                }
+            }
+        }
+
+        public short? GetModel()
+        {
+            return this.serialModel.GetModel();
         }
 
         public void SendWriteMessage(byte command)
@@ -168,41 +220,27 @@
         {
             if (this.serialPort != null && this.serialPort.IsOpen)
             {
-                try
-                {
-                    byte[] message = new byte[3];
-                    message[0] = command;
-                    message[1] = value;
-                    message[2] = Convert.ToByte('\n');
-                    this.serialPort.Write(message, 0, message.Length);
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine(System.Environment.StackTrace);
-                }
+                byte[] message = new byte[3];
+                message[0] = command;
+                message[1] = value;
+                message[2] = Convert.ToByte('\n');
+                this.serialPort.Write(message, 0, message.Length);
             }
         }
 
-        public string SendReadMessage(byte command)
+        public byte? SendReadMessage(byte command)
         {
             if (this.serialPort != null && this.serialPort.IsOpen)
             {
-                try
-                {
-                    byte[] message = new byte[2];
-                    message[0] = command;
-                    message[1] = Convert.ToByte('\n');
-                    this.serialPort.Write(message, 0, message.Length);
+               
+                byte[] message = new byte[2];
+                message[0] = command;
+                message[1] = Convert.ToByte('\n');
+                this.serialPort.Write(message, 0, message.Length);
 
-                    byte[] response = new byte[1];
-                    this.serialPort.Read(response, 0, 1);
-                    return response[0].ToString();
-                }
-                catch (TimeoutException)
-                {
-                    Console.WriteLine(System.Environment.StackTrace);
-                    return null;
-                }
+                byte[] response = new byte[1];
+                this.serialPort.Read(response, 0, 1);
+                return response[0];
             }
             else
             {

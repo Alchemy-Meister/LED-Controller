@@ -9,6 +9,10 @@
         public const string COM = "COM";
         public const short BaudRate = 9600;
 
+        public enum models : short {LPD8805 = 127, LED5050 = 255};
+
+        public enum handShake { SYN = 0x01, ACK = 0xFF};
+
         private readonly Dictionary<string, byte> statusList =
            new Dictionary<string, byte>()
            {
@@ -16,15 +20,16 @@
                 { "Off", Convert.ToByte('F') }
            };
 
-        private readonly Dictionary<string, byte> effectList =
-            new Dictionary<string, byte>()
+        private readonly Dictionary<string, byte[]> effectList =
+            new Dictionary<string, byte[]>()
             {
-                { "Static", Convert.ToByte('K') },
-                { "Fade", Convert.ToByte('H') },
-                { "Breath", Convert.ToByte('I') },
-                { "Flash", Convert.ToByte('L') },
-                { "Double Flash", Convert.ToByte('M') },
-                { "Spectrum cycle", Convert.ToByte('J') }
+                { "Static", new byte[] { Convert.ToByte('K'), 1 } },
+                { "Fade", new byte[] { Convert.ToByte('H'), 1 } },
+                { "Breath", new byte[] { Convert.ToByte('I'), 1 } },
+                { "Flash", new byte[] { Convert.ToByte('L'), 1 } },
+                { "Double Flash", new byte[] { Convert.ToByte('M'), 1 } },
+                { "Spectrum cycle", new byte[] { Convert.ToByte('J'), 1 } },
+                { "Rainbow spin", new byte[] { Convert.ToByte('O'), 0 } }
             };
 
         private bool ledPower = true;
@@ -34,6 +39,8 @@
         private byte blueLedValue = 0;
 
         private short serialPortNumber = -1;
+
+        private short? model = null;
 
         public bool GetLedPower()
         {
@@ -45,9 +52,28 @@
             this.ledPower = power;
         }
 
-        public Dictionary<string, byte> GetEffectList()
+        public Dictionary<string, byte> GetEffectList(models model)
         {
-            return this.effectList;
+            Dictionary<string, byte> returnDict = new Dictionary<string, byte>();
+            switch (model)
+            {
+                case models.LPD8805:
+                    foreach (KeyValuePair<string, byte[]> entry in effectList)
+                    {
+                        returnDict.Add(entry.Key, entry.Value[0]);
+                    }
+                    break;
+                case models.LED5050:
+                    foreach (KeyValuePair<string, byte[]> entry in effectList)
+                    {
+                        if(entry.Value[1].Equals(Convert.ToByte(1)))
+                        {
+                            returnDict.Add(entry.Key, entry.Value[0]);
+                        }
+                    }
+                    break;
+            }
+            return returnDict;
         }
 
         public Dictionary<string, byte> GetStatusList()
@@ -93,6 +119,16 @@
         public void SetSerialPortNumber(short portNumber)
         {
             this.serialPortNumber = portNumber;
+        }
+
+        public void SetModel(models model)
+        {
+            this.model = (short) model;
+        }
+
+        public short? GetModel()
+        {
+            return this.model;
         }
     }
 }

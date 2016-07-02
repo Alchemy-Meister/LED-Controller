@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Drawing;
     using System.Linq;
+    using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Forms;
@@ -16,12 +17,7 @@
     {
         private MainWindowController controller;
 
-        private DeviceSerialPortDelegate deleg;
-
         private NotifyIcon notifyIcon;
-
-        // Delegate wrapper function for the deviceSerialPort function
-        private delegate short DeviceSerialPortDelegate();
 
         // Previous value of the LEDs
         private string previousStatus = null;
@@ -40,13 +36,12 @@
             else
             {
                 this.controller = new MainWindowController();
-                this.deleg = new DeviceSerialPortDelegate(this.controller.DeviceUpdatedSerialPort);
                 this.Closing += this.MainWindow_Closing;
                 this.StateChanged += this.Window_StateChanged;
                 this.InitializeComponent();
-                this.InitializeTray();
                 this.InitializeSerialPort();
-                this.InitializeEffectComboBox();
+                this.InitializeStatusComboBox();
+                this.InitializeTray();
             }
         }
 
@@ -132,20 +127,40 @@
         {
             if (msg == UsbNotification.WmDevicechange)
             {
-                AsyncCallback callback;
                 switch ((int)wparam)
                 {
                     case UsbNotification.DbtDevicearrival:
-                        callback = new AsyncCallback(this.DeviceConnectedCallback);
+                        Task.Run(() =>
+                        {
+                            lock(this.controller)
+                            {
+                                if (this.controller.DeviceUpdatedSerialPort() != -1 && !this.controller.IsSerialPortOpened())
+                                {
+                                    // Opens the serial connection and updates the GUI on a safe thread.
+                                    this.controller.InitializeSerialPort();
+                                    this.controller.OpenSerialPort();
 
-                        // invoke the thread that will handle getting the serial port number.   
-                        this.deleg.BeginInvoke(callback, null);
+                                    // Make sure that serial has finished opening.
+                                    Task.Delay(2000).Wait();
+                                    if(this.controller.HandShake())
+                                    {
+                                        this.controller.UpdateModel();
+                                        this.SafeExecution(this.ProcessDeviceConnectionGUI);
+                                    }
+                                }
+                            }
+                        });
                         break;
                     case UsbNotification.DbtDeviceremovecomplete:
-                        callback = new AsyncCallback(this.DeviceDisconnectedCallback);
-
-                        // invoke the thread that will handle getting the serial port number.
-                        this.deleg.BeginInvoke(callback, null);
+                        Task.Run(() =>
+                        {
+                            if (this.controller.DeviceUpdatedSerialPort() == -1)
+                            {
+                                // Updates the GUI on a safe thread.
+                                this.controller.CloseSerialPort();
+                                this.SafeExecution(this.ProcessDeviceDisconnectionGUI);
+                            }
+                        });
                         break;
                 }
             }
@@ -160,7 +175,15 @@
             {
                 this.controller.InitializeSerialPort();
                 this.controller.OpenSerialPort();
-                this.ProcessDeviceConnectionGUI();
+                
+                // Make sure that serial has finished opening.
+                Task.Delay(2000).Wait();
+
+                if (this.controller.HandShake())
+                {
+                    this.controller.UpdateModel();
+                    this.ProcessDeviceConnectionGUI();
+                }
             }
             else
             {
@@ -168,17 +191,29 @@
             }
         }
 
-        private void InitializeEffectComboBox()
+        private void InitializeEffectComboBox(short model)
         {
-            Dictionary<string, byte> effectList = this.controller.GetEffectList();
-            Dictionary<string, byte> statusList = this.controller.GetStatusList();
+            Dictionary<string, byte> effectList = this.controller.GetEffectList(model);
+            
 
+            this.effectHardCoded = true;
             this.effectCBox.ItemsSource = effectList;
             this.effectCBox.DisplayMemberPath = "Key";
-            this.effectCBox.SelectedIndex = 0;
+            if(this.effectCBox.SelectedIndex == -1)
+            {
+                this.effectCBox.SelectedIndex = 0;
+                this.controller.SendWriteMessage(Convert.ToByte(((KeyValuePair<string, byte>)this.effectCBox.SelectedItem).Value));
+            }
+
             this.effectHardCoded = false;
             this.effectCBox.Items.Refresh();
+        }
 
+        private void  InitializeStatusComboBox()
+        {
+            Dictionary<string, byte> statusList = this.controller.GetStatusList();
+
+            this.statusHardCoded = true;
             this.statusCBox.ItemsSource = statusList;
             this.statusCBox.DisplayMemberPath = "Key";
             this.statusCBox.SelectedIndex = 0;
@@ -193,51 +228,22 @@
             this.controller.SetBlueLedValue((byte)Math.Round(blueSlider.Value * 2.55));
         }
 
-        // Callback method when the thread returns  
-        private void DeviceConnectedCallback(IAsyncResult ar)
-        {
-            // Got the Serial Port number.  
-            short serialPortNumber = this.deleg.EndInvoke(ar);
-            
-            // Lock the Controller until critical zone is completed
-            lock (this.controller)
-            {
-                // CRITICAL ZONE since multiple device arrivals can be triggered 
-                // at the same time and could try to open the port multiple times
-                // raising an exception
-                if (serialPortNumber != -1 && !this.controller.IsSerialPortOpened())
-                {
-                    // Opens the serial connection and updates the GUI on a safe thread.
-                    this.controller.InitializeSerialPort();
-                    this.controller.OpenSerialPort();
-
-                    this.SafeExecution(this.ProcessDeviceConnectionGUI);
-                }
-            }
-        }
-
-        // Callback method when the thread returns
-        private void DeviceDisconnectedCallback(IAsyncResult ar)
-        {
-            // Got the Serial Port number.
-            short serialPortNumber = this.deleg.EndInvoke(ar);
-            if (serialPortNumber == -1)
-            {
-                // Updates the GUI on a safe thread.
-                this.controller.CloseSerialPort();
-                this.SafeExecution(this.ProcessDeviceDisconnectionGUI);
-            }
-        }
-
         // The function that opens the serial connection and updates de GUI according to the device connection.
         private void ProcessDeviceConnectionGUI()
         {
-            textBox.Text = "COM" + this.controller.GetSerialPort();
-            this.statusCBox.IsEnabled = true;
-            if (this.controller.IsLedPowered())
+            short? model = this.controller.GetModel();
+            if(model != null)
             {
-                this.ProcessLedOnGUI();
-                this.controller.InitializeDevice();
+                textBox.Text = "Model " + model + " COM" + this.controller.GetSerialPort();
+                this.statusCBox.IsEnabled = true;
+                this.InitializeEffectComboBox((short)model);
+
+                if (this.controller.IsLedPowered())
+                {
+                    this.ProcessLedOnGUI();
+                    this.controller.InitializeDevice();
+                    this.controller.SendWriteMessage(Convert.ToByte(((KeyValuePair<string, byte>)this.effectCBox.SelectedItem).Value));
+                }
             }
         }
 
