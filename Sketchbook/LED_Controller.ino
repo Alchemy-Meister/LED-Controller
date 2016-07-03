@@ -91,10 +91,6 @@ void setup() {
 	// Start up the LED strip
 	strip.begin();
 
-	handShakeEstablished = 1;
-	initializeRainbowSpinEffect();
-	rainbowSpin.setInverse(1);
-
 	// Initializes actual time.
 	now = micros();
 	deltaTime = 0;
