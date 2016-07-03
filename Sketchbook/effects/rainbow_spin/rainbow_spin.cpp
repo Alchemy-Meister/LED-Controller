@@ -1,6 +1,6 @@
 #include "rainbow_spin.h"
 
-const uint32_t RainbowSpin::transitionDuration = 15000L;
+const uint32_t RainbowSpin::transitionDuration = 7000L;
 
 const uint16_t RainbowSpin::wheelRange = Color::SIGNED_RANGE * 3;
 
@@ -8,6 +8,7 @@ RainbowSpin::RainbowSpin(const LPD8806 strip) : TimeBasedLPD8806Effect(strip) {
 	this->currentTransitionDuration = RainbowSpin::transitionDuration
 		* strip.numPixels() / defaultStripLength;
 	this->currentRedPosition = 0;
+	this->inverse = 0;
 }
 
 void RainbowSpin::initializeEffect() {
@@ -34,7 +35,7 @@ void RainbowSpin::processEffect() {
 
 		if(this->currentRedPosition > wheelRange) {
 			this->currentRedPosition = uint16_t(this->currentRedPosition)
-				% this->strip.numPixels();
+				% wheelRange;
 		}
 
 		for(uint16_t i = 0; i < this->strip.numPixels(); i++) {

@@ -1,8 +1,8 @@
 #include <Arduino.h>
+#include <SPI.h>
 
 // LED_Controller.ino
 
-#include "SPI.h"
 #include "color/color.h"
 #include "color/float_color.h"
 #include "effects/fade/fade.h"
@@ -14,11 +14,6 @@
 const uint8_t RED_PIN				= 3;
 const uint8_t GREEN_PIN			= 5;
 const uint8_t BLUE_PIN			= 6;
-
-// Declares data and clock used by the LPD8806 micro-controller.
-const uint8_t DATA  = 7;
-// CLOCK must be a PWM pin.
-const uint8_t CLOCK = 9;
 
 // Declares HANDSHAKE COMMANDS
 const uint8_t SYN_IN						= 0x01;
@@ -72,7 +67,7 @@ uint8_t ledPower = 1;
 uint8_t individualLEDController = 1;
 
 // Number of LEDs connected to the strip.
-uint8_t ledNumber = 48;
+uint8_t ledNumber = 92;
 
 LPD8806 strip = LPD8806(ledNumber);
 
