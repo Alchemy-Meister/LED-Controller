@@ -17,7 +17,7 @@ void RainbowSpin::initializeEffect() {
 		this->strip.setPixelColor(
 			i,
 			Color::colorFromWheel(
-				(i * wheelRange / this->strip.numPixels())
+				(i * this->wheelRange / this->strip.numPixels())
 				% wheelRange, Color::SIGNED_RANGE)
 		);
 	}
@@ -31,20 +31,20 @@ void RainbowSpin::processEffect() {
 
 		this->currentRedPosition += elapsedTime
 			/ this->currentTransitionDuration
-			* wheelRange / this->strip.numPixels();
+			* this->wheelRange / this->strip.numPixels();
 
-		if(this->currentRedPosition > wheelRange) {
+		if(this->currentRedPosition > this->wheelRange) {
 			this->currentRedPosition = uint16_t(this->currentRedPosition)
-				% wheelRange;
+				% this->wheelRange;
 		}
 
 		for(uint16_t i = 0; i < this->strip.numPixels(); i++) {
-			if(inverse) {
+			if(this->inverse) {
 				this->strip.setPixelColor(
 					i,
-					Color::colorFromWheel((wheelRange - 1) -
-						((uint16_t(i * wheelRange / this->strip.numPixels())
-						+ uint16_t(this->currentRedPosition)) % wheelRange),
+					Color::colorFromWheel((this->wheelRange - 1) -
+						((uint16_t(i * this->wheelRange / this->strip.numPixels())
+						+ uint16_t(this->currentRedPosition)) % this->wheelRange),
 						Color::SIGNED_RANGE
 					)
 				);
@@ -52,8 +52,8 @@ void RainbowSpin::processEffect() {
 				this->strip.setPixelColor(
 					i,
 					Color::colorFromWheel(
-						(uint16_t(i * wheelRange / this->strip.numPixels())
-						+ uint16_t(this->currentRedPosition)) % wheelRange,
+						(uint16_t(i * this->wheelRange / this->strip.numPixels())
+						+ uint16_t(this->currentRedPosition)) % this->wheelRange,
 						Color::SIGNED_RANGE
 					)
 				);
@@ -66,7 +66,7 @@ void RainbowSpin::processEffect() {
 
 void RainbowSpin::setSpeed(const float speed) {
 	this->currentTransitionDuration = RainbowSpin::transitionDuration
-		* strip.numPixels() / defaultStripLength / speed;
+		* strip.numPixels() / this->defaultStripLength / speed;
 }
 
 void RainbowSpin::setInverse(const uint8_t inverse) {
