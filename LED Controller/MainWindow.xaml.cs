@@ -286,30 +286,30 @@
 
         private async void RedSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            double value = redSlider.Value;
+            byte value = (byte) Math.Round(redSlider.Value * (short) this.controller.GetModel() / 100);
             await Task.Run(() =>
             {
-                this.controller.SendWriteMessage(Convert.ToByte('R'), (byte)Math.Round(value * 2.55));
+                this.controller.SendWriteMessage(Convert.ToByte('R'), value);
                 Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('C')));
             });
         }
 
         private async void GreenSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            double value = greenSlider.Value;
+            byte value = (byte) Math.Round(greenSlider.Value * (short) this.controller.GetModel() / 100);
             await Task.Run(() =>
             {
-                this.controller.SendWriteMessage(Convert.ToByte('G'), (byte)Math.Round(value * 2.55));
+                this.controller.SendWriteMessage(Convert.ToByte('G'), value);
                 Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('D')));
             });
         }
 
         private async void BlueSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            double value = blueSlider.Value;
+            byte value = (byte) Math.Round(blueSlider.Value * (short) this.controller.GetModel() / 100);
             await Task.Run(() =>
             {
-                this.controller.SendWriteMessage(Convert.ToByte('B'), (byte)Math.Round(value * 2.55));
+                this.controller.SendWriteMessage(Convert.ToByte('B'), value);
                 Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('E')));
             });
         }
