@@ -19,9 +19,6 @@
 
         private NotifyIcon notifyIcon;
 
-        // Previous value of the LEDs
-        private string previousStatus = null;
-
         private bool statusHardCoded = true;
         private bool effectHardCoded = true;
 
@@ -287,39 +284,56 @@
             }
         }
 
-        private void RedSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private async void RedSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            this.controller.SendWriteMessage(Convert.ToByte('R'), (byte)Math.Round(redSlider.Value * 2.55));
-            Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('C')));
+            double value = redSlider.Value;
+            await Task.Run(() =>
+            {
+                this.controller.SendWriteMessage(Convert.ToByte('R'), (byte)Math.Round(value * 2.55));
+                Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('C')));
+            });
         }
 
-        private void GreenSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private async void GreenSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            this.controller.SendWriteMessage(Convert.ToByte('G'), (byte)Math.Round(greenSlider.Value * 2.55));
-            Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('D')));
+            double value = greenSlider.Value;
+            await Task.Run(() =>
+            {
+                this.controller.SendWriteMessage(Convert.ToByte('G'), (byte)Math.Round(value * 2.55));
+                Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('D')));
+            });
         }
 
-        private void BlueSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private async void BlueSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            this.controller.SendWriteMessage(Convert.ToByte('B'), (byte)Math.Round(blueSlider.Value * 2.55));
-            Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('E')));
+            double value = blueSlider.Value;
+            await Task.Run(() =>
+            {
+                this.controller.SendWriteMessage(Convert.ToByte('B'), (byte)Math.Round(value * 2.55));
+                Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('E')));
+            });
         }
 
-        private void EffectChanged(object sender, SelectionChangedEventArgs e)
+        private async void EffectChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!this.effectHardCoded)
             {
-                this.controller.SendWriteMessage(Convert.ToByte(((KeyValuePair<string, byte>)this.effectCBox.SelectedItem).Value));
+                byte selectedEffect = ((KeyValuePair<string, byte>)this.effectCBox.SelectedItem).Value;
+                await Task.Run(() =>
+                {
+                    this.controller.SendWriteMessage(Convert.ToByte(selectedEffect));
+                });
             }
         }
 
-        private void StatusChanged(object sender, SelectionChangedEventArgs e)
+        private async void StatusChanged(object sender, SelectionChangedEventArgs e)
         {
             if(!this.statusHardCoded)
             {
                 KeyValuePair<string, byte> selectedStatus =
-                ((KeyValuePair<string, byte>)this.statusCBox.SelectedItem);
-                if (this.previousStatus == null || this.previousStatus != selectedStatus.Key)
+                (KeyValuePair<string, byte>) this.statusCBox.SelectedItem;
+
+                await Task.Run(() =>
                 {
                     this.controller.SendWriteMessage(Convert.ToByte(selectedStatus.Value));
 
@@ -327,18 +341,42 @@
                     {
                         this.controller.SetLedPower(true);
                         this.controller.InitializeDevice();
-                        this.ProcessLedOnGUI();
+                        this.SafeExecution(this.ProcessLedOnGUI);
                     }
                     else
                     {
                         this.controller.SetLedPower(false);
-                        this.SaveRGBValues();
-                        this.ProcessLedOffGUI();
+                        this.SafeExecution(this.SaveRGBValues);
+                        this.SafeExecution(this.ProcessLedOffGUI);
                     }
-                }
-
-                this.previousStatus = selectedStatus.Key;
+                });
             }
+        }
+
+        private void Checked(object sender, RoutedEventArgs e)
+        {
+            this.CheckChanged(sender as System.Windows.Controls.CheckBox);
+        }
+
+        private void Unchecked(object sender, RoutedEventArgs e)
+        {
+            this.CheckChanged(sender as System.Windows.Controls.CheckBox);
+        }
+
+        private async void CheckChanged(System.Windows.Controls.CheckBox checkbox)
+        {
+            bool clockwiseChanged = (bool)checkbox.IsChecked;
+            await Task.Run(() =>
+            {
+                if (clockwiseChanged)
+                {
+                    this.controller.SendWriteMessage(Convert.ToByte('Q'), Convert.ToByte(1));
+                }
+                else
+                {
+                    this.controller.SendWriteMessage(Convert.ToByte('Q'), Convert.ToByte(0));
+                }
+            });
         }
     }
 }
