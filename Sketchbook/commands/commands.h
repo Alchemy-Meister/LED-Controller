@@ -12,7 +12,7 @@ public:
 
   // Declares MODEL COMMAND
   enum MODEL {
-      MODEL							= 'P'
+      MODEL						= 'P'
   };
 
   // Declares the POWER COMMANDS
@@ -46,7 +46,7 @@ public:
     RAINBOW_SPIN			= 'O'
   };
 
-  //Declares the EFFECT SPEED COMMANDS
+  // Declares the EFFECT SPEED COMMANDS
   enum SPEED {
     SPEED							= 'S',
     TRIPLE						= 'T',
@@ -54,6 +54,12 @@ public:
     NORMAL						= 'V',
     HALF							= 'W',
     THIRD							= 'X'
+  };
+
+  // Declared the EFFECT SENSE COMMAND
+  enum SENSE {
+    SENSE             = 'Q',
+    CLOCKWISE         = 0x01,
   };
 };
 

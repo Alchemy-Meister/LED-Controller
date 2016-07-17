@@ -60,7 +60,7 @@ uint32_t lastTime;
 float deltaTime;
 
 // Byte array where the COMMAND is stored.
-uint8_t code[2];
+uint8_t code[3];
 
 // Index to access the COMMAND array.
 uint8_t index = 0;
@@ -300,14 +300,6 @@ void processSpeed() {
 	}
 }
 
-void processModel() {
-	if(individualLEDController) {
-		Serial.write(Color::SIGNED_RANGE - 1);
-	} else {
-		Serial.write(Color::UNSIGNED_RANGE - 1);
-	}
-}
-
 void processHandShake() {
 	if(micros() - handShakeStart >= handShakeTime) {
 		synCheck = 0;
@@ -326,11 +318,34 @@ void processHandShake() {
 	}
 }
 
+void processModel() {
+	if(individualLEDController) {
+		Serial.write(Color::SIGNED_RANGE - 1);
+	} else {
+		Serial.write(Color::UNSIGNED_RANGE - 1);
+	}
+}
+
+void processSense() {
+	switch(currentEffect) {
+		case Commands::RAINBOW_SPIN:
+			if(code[1] == Commands::CLOCKWISE) {
+				rainbowSpin.setSense(1);
+			} else {
+				rainbowSpin.setSense(0);
+			}
+			break;
+	}
+}
+
 // Processes the COMMAND received from SERIAL.
 void process() {
 	switch(code[0]){
 		case Commands::SYN_IN:
 			processHandShake();
+			break;
+		case Commands::MODEL:
+			processModel();
 			break;
 		case Commands::TURN_ON:
 			turnOnProcess();
@@ -361,8 +376,8 @@ void process() {
 		case Commands::SPEED:
 			processSpeed();
 			break;
-		case Commands::MODEL:
-			processModel();
+		case Commands::SENSE:
+			processSense();
 			break;
 	}
 }
