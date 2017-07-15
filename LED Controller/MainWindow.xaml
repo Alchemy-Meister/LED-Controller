@@ -21,8 +21,8 @@
         <Button x:Name="applyButton" Grid.Column="1" Content="Apply" HorizontalAlignment="Right" Margin="0,0,10.157,10.042" Width="75" RenderTransformOrigin="0.522,-0.263" VerticalAlignment="Bottom" Height="20"/>
         <ComboBox x:Name="effectCBox"  Margin="9,71,0,0" Height="22" MinWidth="126"  VerticalAlignment="Top" SelectionChanged="EffectChanged" HorizontalAlignment="Left" Width="126"/>
         <ComboBox x:Name="statusCBox" Margin="9,43,0,0" VerticalAlignment="Top" MinWidth="126" HorizontalAlignment="Left" Width="126" Height="22" SelectionChanged="StatusChanged"/>
-        <CheckBox x:Name="checkBox" Content="Clockwise" Grid.Column="1" HorizontalAlignment="Left" Margin="10,152,0,0" VerticalAlignment="Top" Checked="Checked" Unchecked="Unchecked" IsChecked="True"/>
-        <Slider x:Name="slider" Grid.Column="1" HorizontalAlignment="Left" Margin="10,129,0,0" VerticalAlignment="Top" Width="150"/>
+        <CheckBox x:Name="checkBox" Content="Clockwise" Grid.Column="1" HorizontalAlignment="Left" Margin="10,152,0,0" VerticalAlignment="Top" Checked="Checked" Unchecked="Unchecked" IsChecked="True" Opacity="0.965" Visibility="Hidden"/>
+        <Slider x:Name="speed" Grid.Column="1" HorizontalAlignment="Left" Margin="10,129,0,0" VerticalAlignment="Top" Width="150"/>
         <Label x:Name="label" Content="Speed:" Grid.Column="1" HorizontalAlignment="Left" Margin="10,98,0,0" VerticalAlignment="Top" Height="26" Width="50" RenderTransformOrigin="0.36,1.064"/>
 
     </Grid>

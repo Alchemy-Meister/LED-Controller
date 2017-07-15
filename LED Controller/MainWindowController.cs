@@ -56,13 +56,25 @@
         {
             switch (model)
             {
-                case (short) SerialModel.models.LPD8805:
+                case (short)SerialModel.models.LPD8805:
                     return this.serialModel.GetEffectList(SerialModel.models.LPD8805);
-                case (short) SerialModel.models.LED5050:
+                case (short)SerialModel.models.LED5050:
                     return this.serialModel.GetEffectList(SerialModel.models.LED5050);
                 default:
                     return null;
             }
+        }
+
+        public bool ShowClockWiseCheck(String value) {
+            if(SerialModel.GetEffectName(SerialModel.effectNames.RAINBOW_SPIN).Equals(value))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+           
         }
 
         public Dictionary<string, byte> GetStatusList()

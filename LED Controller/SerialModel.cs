@@ -2,6 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Reflection;
 
     class SerialModel
     {
@@ -20,16 +22,26 @@
                 { "Off", Convert.ToByte('F') }
            };
 
+        public enum effectNames {
+            [Description("Static")] STATIC,
+            [Description("Fade")] FADE,
+            [Description("Breath")] BREATH,
+            [Description("Flash")] FLASH,
+            [Description("Double flash")] DOUBLE_FLASH,
+            [Description("Spectrum cycle")] SPECTRUM_CYCLE,
+            [Description("Rainbow spin")] RAINBOW_SPIN
+        };
+
         private readonly Dictionary<string, byte[]> effectList =
             new Dictionary<string, byte[]>()
             {
-                { "Static", new byte[] { Convert.ToByte('K'), 1 } },
-                { "Fade", new byte[] { Convert.ToByte('H'), 1 } },
-                { "Breath", new byte[] { Convert.ToByte('I'), 1 } },
-                { "Flash", new byte[] { Convert.ToByte('L'), 1 } },
-                { "Double Flash", new byte[] { Convert.ToByte('M'), 1 } },
-                { "Spectrum cycle", new byte[] { Convert.ToByte('J'), 1 } },
-                { "Rainbow spin", new byte[] { Convert.ToByte('O'), 0 } }
+                { GetEffectName(effectNames.STATIC), new byte[] { Convert.ToByte('K'), 1 } },
+                { GetEffectName(effectNames.FADE), new byte[] { Convert.ToByte('H'), 1 } },
+                { GetEffectName(effectNames.BREATH), new byte[] { Convert.ToByte('I'), 1 } },
+                { GetEffectName(effectNames.FLASH), new byte[] { Convert.ToByte('L'), 1 } },
+                { GetEffectName(effectNames.DOUBLE_FLASH), new byte[] { Convert.ToByte('M'), 1 } },
+                { GetEffectName(effectNames.SPECTRUM_CYCLE), new byte[] { Convert.ToByte('J'), 1 } },
+                { GetEffectName(effectNames.RAINBOW_SPIN), new byte[] { Convert.ToByte('O'), 0 } }
             };
 
         private bool ledPower = true;
@@ -50,6 +62,19 @@
         public void SetLedPower(bool power)
         {
             this.ledPower = power;
+        }
+        
+        public static string GetEffectName(Enum value)
+        {
+            FieldInfo fi = value.GetType().GetField(value.ToString());
+
+            DescriptionAttribute[] attributes =
+                (DescriptionAttribute[]) fi.GetCustomAttributes(typeof(DescriptionAttribute), false);
+
+            if (attributes != null && attributes.Length > 0)
+                return attributes[0].Description;
+            else
+                return value.ToString();
         }
 
         public Dictionary<string, byte> GetEffectList(models model)
