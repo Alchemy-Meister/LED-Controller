@@ -251,6 +251,7 @@
             this.greenSlider.IsEnabled = true;
             this.blueSlider.IsEnabled = true;
             this.applyButton.IsEnabled = true;
+            this.speed.IsEnabled = true;
         }
 
         // Updates de GUI according to the device disconneciton.
@@ -269,6 +270,7 @@
             this.greenSlider.IsEnabled = false;
             this.blueSlider.IsEnabled = false;
             this.applyButton.IsEnabled = false;
+            this.speed.IsEnabled = false;
         }
 
         // Execute action in the GUI thread.
@@ -290,7 +292,6 @@
             await Task.Run(() =>
             {
                 this.controller.SendWriteMessage(Convert.ToByte('R'), value);
-                Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('C')));
             });
         }
 
@@ -300,7 +301,6 @@
             await Task.Run(() =>
             {
                 this.controller.SendWriteMessage(Convert.ToByte('G'), value);
-                Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('D')));
             });
         }
 
@@ -310,7 +310,6 @@
             await Task.Run(() =>
             {
                 this.controller.SendWriteMessage(Convert.ToByte('B'), value);
-                Console.WriteLine(this.controller.SendReadMessage(Convert.ToByte('E')));
             });
         }
 
@@ -318,10 +317,18 @@
         {
             if (!this.effectHardCoded)
             {
-                byte selectedEffect = ((KeyValuePair<string, byte>)this.effectCBox.SelectedItem).Value;
+                KeyValuePair<string, byte> selectedEffect = ((KeyValuePair<string, byte>) this.effectCBox.SelectedItem);
+                if(this.controller.ShowClockWiseCheck(selectedEffect.Key))
+                {
+                    this.checkBox.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    this.checkBox.Visibility = Visibility.Hidden;
+                }
                 await Task.Run(() =>
                 {
-                    this.controller.SendWriteMessage(Convert.ToByte(selectedEffect));
+                    this.controller.SendWriteMessage(Convert.ToByte(selectedEffect.Value));
                 });
             }
         }
