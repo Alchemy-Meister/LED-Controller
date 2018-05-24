@@ -6,21 +6,21 @@
 class ColorSpeed {
 
 private:
-	uint16_t red;
-	uint16_t green;
-	uint16_t blue;
+    uint16_t red;
+    uint16_t green;
+    uint16_t blue;
 public:
-	ColorSpeed();
-	ColorSpeed(const uint16_t red, const uint16_t green, const uint16_t blue);
-	ColorSpeed(const ColorSpeed &colorSpeed);
+    ColorSpeed();
+    ColorSpeed(const uint16_t red, const uint16_t green, const uint16_t blue);
+    ColorSpeed(const ColorSpeed &colorSpeed);
 
-	uint16_t getRedSpeed() const;
-	uint16_t getGreenSpeed() const;
-	uint16_t getBlueSpeed() const;
+    uint16_t getRedSpeed() const;
+    uint16_t getGreenSpeed() const;
+    uint16_t getBlueSpeed() const;
 
-	void setRedSpeed(const uint16_t redSpeed);
-	void setGreenSpeed(const uint16_t greenSpeed);
-	void setBlueSpeed(const uint16_t blueSpeed);
+    void setRedSpeed(const uint16_t redSpeed);
+    void setGreenSpeed(const uint16_t greenSpeed);
+    void setBlueSpeed(const uint16_t blueSpeed);
 };
 
 #endif

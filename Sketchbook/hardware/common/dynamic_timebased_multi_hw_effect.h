@@ -8,21 +8,21 @@
 
 class DynamicTimeBasedMultiHWEffect : public TimeBasedMultiHWEffect
 {
-	protected:
-		ColorSpeed colorSpeed;
+protected:
+    ColorSpeed colorSpeed;
 
-		float componentTransition(const float component,
-				const uint8_t targetComp, const float deltaTime,
-				FloatColor::RGB compIdentifier);
+    float componentTransition(const float component,
+            const uint8_t targetComp, const float deltaTime,
+            FloatColor::RGB compIdentifier);
 
-		uint16_t getComponentSpeed(FloatColor::RGB) const;
-	public:
-		DynamicTimeBasedMultiHWEffect(const LPD8806 strip);
+    uint16_t getComponentSpeed(FloatColor::RGB) const;
+public:
+    DynamicTimeBasedMultiHWEffect(const LPD8806 strip);
 
-		void transition(FloatColor &color, const Color &target,
-			const float deltaTime);
+    void transition(FloatColor &color, const Color &target,
+        const float deltaTime);
 
-		virtual void setSpeed(const float speed) = 0;
+    virtual void setSpeed(const float speed) = 0;
 };
 
 #endif

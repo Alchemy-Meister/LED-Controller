@@ -7,11 +7,11 @@
 
 class RGBLedStrip {
 protected:
-	static const uint8_t MAX_BRIGTHNESS = 255;
+    static const uint8_t MAX_BRIGTHNESS = 255;
 
 public:
-	void updateEffect(const Color currentColor, const uint8_t redPin,
-		const uint8_t greenPin, const uint8_t bluePin);
+    void updateEffect(const Color currentColor, const uint8_t redPin,
+        const uint8_t greenPin, const uint8_t bluePin);
 };
 
 #endif

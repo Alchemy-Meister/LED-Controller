@@ -6,37 +6,37 @@
 class FloatColor {
 
 private:
-	float red;
-	float green;
-	float blue;
+    float red;
+    float green;
+    float blue;
 public:
-	enum RGB { RED, GREEN, BLUE };
+    enum RGB { RED, GREEN, BLUE };
 
-	FloatColor();
-	FloatColor(const float red, const float green, const float blue);
-	FloatColor(const FloatColor &color);
-	FloatColor(const Color &color);
+    FloatColor();
+    FloatColor(const float red, const float green, const float blue);
+    FloatColor(const FloatColor &color);
+    FloatColor(const Color &color);
 
-	float getRed() const;
-	float getGreen() const;
-	float getBlue() const;
+    float getRed() const;
+    float getGreen() const;
+    float getBlue() const;
 
-	float getComponent(FloatColor::RGB component) const;
+    float getComponent(FloatColor::RGB component) const;
 
-	void setRed(const float red);
-	void setGreen(const float green);
-	void setBlue(const float blue);
+    void setRed(const float red);
+    void setGreen(const float green);
+    void setBlue(const float blue);
 
-	void setComponent(FloatColor::RGB component, const float value);
+    void setComponent(FloatColor::RGB component, const float value);
 
-	void setColors(const FloatColor &color);
-	void setColors(const Color &color);
+    void setColors(const FloatColor &color);
+    void setColors(const Color &color);
 
-	static float colorUpLimiter(const float color, const uint8_t limiter);
-	static float colorDownLimiter(const float color, 
-		const uint8_t limiter);
-	static uint8_t componentIsIncrement(const float color,
-		const uint8_t target);
+    static float colorUpLimiter(const float color, const uint8_t limiter);
+    static float colorDownLimiter(const float color, 
+        const uint8_t limiter);
+    static uint8_t componentIsIncrement(const float color,
+        const uint8_t target);
 };
 
 #endif

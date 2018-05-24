@@ -8,18 +8,18 @@
 class MultiHWEffect : public RGBLedStrip, public LPD8806Effect
 {
 protected:
-	// Boolean to check if LPD8806 is being used.
-	uint8_t multiLEDController;
+    // Boolean to check if LPD8806 is being used.
+    uint8_t multiLEDController;
 
 public:
-	MultiHWEffect(LPD8806 strip);
-	MultiHWEffect(LPD8806 strip, uint8_t isSingleControllerEnabled);
+    MultiHWEffect(LPD8806 strip);
+    MultiHWEffect(LPD8806 strip, uint8_t isSingleControllerEnabled);
 
-	void enableSingleLEDController(const uint8_t enable);
-	uint8_t isSingleLEDControllerEnabled() const;
+    void enableSingleLEDController(const uint8_t enable);
+    uint8_t isSingleLEDControllerEnabled() const;
 
-	void updateStripColor(const Color currentColor, const uint8_t redPin,
-		const uint8_t greenPin, const uint8_t bluePin);
+    void updateStripColor(const Color currentColor, const uint8_t redPin,
+        const uint8_t greenPin, const uint8_t bluePin);
 };
 
 #endif

@@ -6,15 +6,15 @@
 class TimeBasedLPD8806Effect : public LPD8806Effect
 {
 protected:
-  // Time when effect starts in milliseconds.
-  uint32_t startTime;
-  // Passed time since effect started in milliseconds.
-  uint32_t elapsedTime;
+    // Time when effect starts in milliseconds.
+    uint32_t startTime;
+    // Passed time since effect started in milliseconds.
+    uint32_t elapsedTime;
 
 public:
-  TimeBasedLPD8806Effect(const LPD8806 strip);
+    TimeBasedLPD8806Effect(const LPD8806 strip);
 
-  virtual void setSpeed(const float speed) = 0;
+    virtual void setSpeed(const float speed) = 0;
 };
 
 #endif
