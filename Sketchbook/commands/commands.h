@@ -12,7 +12,7 @@ public:
 
     // Declares MODEL COMMAND
     enum MODEL {
-        MODEL          = 'P'
+        MODEL            = 'P'
     };
 
     // Declares the POWER COMMANDS
@@ -60,6 +60,10 @@ public:
     enum SENSE {
         SENSE            = 'Q',
         CLOCKWISE        = 0x01,
+    };
+
+    enum STORAGE {
+        SAVE             = 0x10
     };
 };
 

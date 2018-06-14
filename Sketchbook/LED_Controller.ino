@@ -16,8 +16,13 @@ const uint8_t RED_PIN   = 3;
 const uint8_t GREEN_PIN = 5;
 const uint8_t BLUE_PIN  = 6;
 
+// SD Chip Select Pin.
+// const uint8_t SDCS_PIN = 4;
+// const char CONF_FILENAME[] = "Config";
+
 // LPD8806 needs to be connected into SPI ports.
 
+// Timeout to
 const uint32_t handShakeTime = 1000000;
 
 // Boolean to check if serial authentication has been established.
@@ -28,11 +33,17 @@ uint32_t handShakeStart;
 // Boolean to check if LEDs powered on/off.
 uint8_t ledPower = 1;
 
+// Loads and Saves configuration to SD card.
+uint8_t externalStorage = 1;
+
+// Initialize settings with previosly saved configuration.
+uint8_t loadSettings = 1;
+
 // Boolean to check the use of the LPD8806 library.
 uint8_t individualLEDController = 1;
 
 // Number of LEDs connected to the strip.
-uint8_t ledNumber = 92;
+uint8_t ledNumber = 90;
 
 LPD8806 strip = LPD8806(ledNumber);
 
@@ -65,6 +76,10 @@ uint8_t code[3];
 // Index to access the COMMAND array.
 uint8_t index = 0;
 
+// void firstTimeInitialization() {
+//     currentEffect = Commands::STATIC;
+// }
+
 //Arduino's initialization
 void setup() {
     // Sets serial communication's baud rate.
@@ -75,28 +90,26 @@ void setup() {
     pinMode(GREEN_PIN, OUTPUT);
     pinMode(BLUE_PIN, OUTPUT);
 
-    // Initializes RGB color into the pins.
-    analogWrite(RED_PIN, baseColor.getRed());
-    analogWrite(GREEN_PIN, baseColor.getGreen());
-    analogWrite(BLUE_PIN, baseColor.getBlue());
-
     // Defines if Single LED Controller is used to render effects.
     fade.enableSingleLEDController(individualLEDController);
     spectrumCycling.enableSingleLEDController(individualLEDController);
     flash.enableSingleLEDController(individualLEDController);
 
-    // Starts serial connection.
-    Serial.begin(rate);
-
     // Start up the LED strip
     strip.begin();
+
+    // Initializes RGB color into the pins.
+    updateColor(baseColor);
+
+    // Starts serial connection.
+    Serial.begin(rate);
 
     // Initializes actual time.
     now = micros();
     deltaTime = 0;
 }
 
-// This function WRITES values into RGB pins depending on the received COMMAND.
+// WRITES values into RGB pins depending on the received COMMAND.
 void writeOnPin() {
     switch(code[0]) {
         case Commands::WRITE_RED:
@@ -117,26 +130,10 @@ void writeOnPin() {
             // Writes BLUE color value into the PIN.
             analogWrite(BLUE_PIN, code[1]);
             break;
-        case Commands::TURN_OFF:
-            // Sets POWER flag to FALSE.
-            ledPower = 0;
-
-            // Writes 0 value into the PINs to turn off the LEDs.
-            if(individualLEDController) {
-                for(uint16_t i = 0; i < strip.numPixels(); i++) {
-                    strip.setPixelColor(i, 0);
-                }
-                strip.show();
-            } else {
-                analogWrite(RED_PIN, 0);
-                analogWrite(GREEN_PIN, 0);
-                analogWrite(BLUE_PIN, 0);
-            }
-            break;
     }
 }
 
-// This function SENDS the values of the base RGB color to the SERIAL.
+// SENDS the values of the base RGB color to the SERIAL.
 void readPin() {
     switch(code[0]) {
         case Commands::READ_RED:
@@ -154,7 +151,7 @@ void readPin() {
     }
 }
 
-// This function restarts the effect and resumes the effect process.
+// Restarts the effect and resumes the effect process.
 void turnOnProcess() {
     // Activates the POWER ON flag to resume effect procedure.
     ledPower = 1;
@@ -175,38 +172,46 @@ void turnOnProcess() {
     }
 }
 
-// This functions sets current RGB values with the base color.
+// Turns off the strip and stop effect process.
+void turnOffProcess() {
+    // Sets POWER flag to FALSE.
+    ledPower = 0;
+    // Writes 0 value into the PINs to turn off the LEDs.
+    updateColor(Color());
+}
+
+// Sets current RGB values with the base color.
 void initializeCurrentColorValues() {
     currentColor.setColors(baseColor);
 }
 
-// This function WRITES into the PINS the current RGB values of the effect.
-void updateColor() {
+// WRITES into the PINS the RGB values of the color passed.
+void updateColor(const FloatColor updateColor) {
     if(individualLEDController){
         for(uint16_t i = 0; i < strip.numPixels(); i++) {
             strip.setPixelColor(
                 i,
-                currentColor.getRed(),
-                currentColor.getGreen(),
-                currentColor.getBlue()
+                updateColor.getRed(),
+                updateColor.getGreen(),
+                updateColor.getBlue()
             );
         }
         strip.show();
     } else {
-        analogWrite(RED_PIN, currentColor.getRed());
-        analogWrite(GREEN_PIN, currentColor.getGreen());
-        analogWrite(BLUE_PIN, currentColor.getBlue());
+        analogWrite(RED_PIN, updateColor.getRed());
+        analogWrite(GREEN_PIN, updateColor.getGreen());
+        analogWrite(BLUE_PIN, updateColor.getBlue());
     }
 }
 
-// This function updates PIN values and TIME variables.
+// Updates PIN values and TIME variables.
 void reset() {
     now = micros();
     fade.setStartTime(now);
     flash.setStartTime(now);
 }
 
-// This function PROCESSES the STATIC EFFECT.
+// PROCESSES the STATIC EFFECT.
 void staticEffect() {
     // Sets current effect to STATIC.
     currentEffect = Commands::STATIC;
@@ -215,10 +220,10 @@ void staticEffect() {
     initializeCurrentColorValues();
 
     // Updates PINS with current RGB values.
-    updateColor();
+    updateColor(currentColor);
 }
 
-// This function INITIALIZES the FADE and BREATHING EFFECTS.
+// INITIALIZES the FADE and BREATHING EFFECTS.
 void initializeFadeBreathingEffect() {
     // Sets current effect to FADE.
     currentEffect = Commands::FADE;
@@ -233,7 +238,7 @@ void initializeFadeBreathingEffect() {
     reset();
 }
 
-// This function INITIALIZES the SPECTRUM CYCLING EFFECT.
+// INITIALIZES the SPECTRUM CYCLING EFFECT.
 void initializeSpectrumCyclingEffect() {
     // Sets current effect to SPECTRUM CYCLING.
     currentEffect = Commands::SPECTRUM_CYCLING;
@@ -350,8 +355,11 @@ void process() {
         case Commands::TURN_ON:
             turnOnProcess();
             break;
+        case Commands::TURN_OFF:
+            turnOffProcess();
+            break;
         case Commands::WRITE_RED: case Commands::WRITE_GREEN:
-        case Commands::WRITE_BLUE: case Commands::TURN_OFF:
+        case Commands::WRITE_BLUE:
             writeOnPin();
             break;
         case Commands::READ_RED: case Commands::READ_GREEN:
@@ -382,7 +390,7 @@ void process() {
     }
 }
 
-// This function the current effect single iteration.
+// Processes a single iteration of current effect.
 void processEffect() {
     switch(currentEffect) {
         // Process FADE effect.
@@ -412,7 +420,7 @@ void processEffect() {
         case Commands::STATIC:
             staticEffect();
             // Updates PINS with current RGB values.
-            updateColor();
+            updateColor(currentColor);
             break;
     }
 }
