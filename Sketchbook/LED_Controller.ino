@@ -34,10 +34,10 @@ uint32_t handShakeStart;
 uint8_t ledPower = 1;
 
 // Loads and Saves configuration to SD card.
-uint8_t externalStorage = 1;
+// uint8_t externalStorage = 1;
 
 // Initialize settings with previosly saved configuration.
-uint8_t loadSettings = 1;
+// uint8_t loadSettings = 1;
 
 // Boolean to check the use of the LPD8806 library.
 uint8_t individualLEDController = 1;
@@ -115,18 +115,27 @@ void writeOnPin() {
         case Commands::WRITE_RED:
             // Updates RED base color.
             baseColor.setRed(code[1]);
+            flash.setFlashColor(baseColor);
+            initializeCurrentColorValues();
+            fade.setFadeColor(baseColor);
             // Writes RED color value into the PIN.
             analogWrite(RED_PIN, code[1]);
             break;
         case Commands::WRITE_GREEN:
             // Updates GREEN base color.
             baseColor.setGreen(code[1]);
+            flash.setFlashColor(baseColor);
+            initializeCurrentColorValues();
+            fade.setFadeColor(baseColor);
             // Writes GREEN color value into the PIN.
             analogWrite(GREEN_PIN, code[1]);
             break;
         case Commands::WRITE_BLUE:
             // Updates BLUE base color.
             baseColor.setBlue(code[1]);
+            flash.setFlashColor(baseColor);
+            initializeCurrentColorValues();
+            fade.setFadeColor(baseColor);
             // Writes BLUE color value into the PIN.
             analogWrite(BLUE_PIN, code[1]);
             break;

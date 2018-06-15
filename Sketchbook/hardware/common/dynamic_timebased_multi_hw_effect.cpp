@@ -18,7 +18,6 @@ uint16_t DynamicTimeBasedMultiHWEffect::getComponentSpeed(
     }
 }
 
-
 // This function calculates the next color transition, depending on the
 // target color, and effect speed.
 void DynamicTimeBasedMultiHWEffect::transition(FloatColor &color,

@@ -40,6 +40,7 @@ public:
     void initializeEffect();
     void initializeEffect(const Color &color, const uint8_t doubleFash);
     void setStartTime(const uint32_t currentTime);
+    void setFlashColor(const Color &color);
     void setSpeed(const float speed);
     void processEffect(FloatColor &color);
 

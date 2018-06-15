@@ -10,7 +10,7 @@ MultiHWEffect::MultiHWEffect(LPD8806 strip, uint8_t isMultiControllerEnabled)
 
 void MultiHWEffect::updateStripColor(const Color currentColor,
   const uint8_t redPin, const uint8_t greenPin, const uint8_t bluePin)
-{
+{ 
     if(this->multiLEDController) {
         for(uint16_t i = 0; i < this->strip.numPixels(); i++) {
             this->strip.setPixelColor(i, currentColor);

@@ -19,7 +19,7 @@ void Flash::initializeEffect() {
 
 void Flash::initializeEffect(const Color &color, const uint8_t doubleFlash) {
     Flash::initializeEffect();
-    
+
     this->flashColor = color;
 
     if(doubleFlash) {
@@ -40,6 +40,10 @@ void Flash::initializeEffect(const Color &color, const uint8_t doubleFlash) {
 
 void Flash::setStartTime(const uint32_t currentTime) {
     this->startTime = currentTime;
+}
+
+void Flash::setFlashColor(const Color &color) {
+  this->flashColor = color;
 }
 
 void Flash::setSpeed(const float speed) {
@@ -64,7 +68,7 @@ void Flash::processEffect(FloatColor &color) {
     this->elapsedTime = micros() - this->startTime;
 
     if(this->middleOff) {
-        color = FloatColor(0, 0, 0);
+        color = FloatColor();
 
         if(this->elapsedTime >= this->currentMiddleOffDuration) {
             this->flashing = 1;
@@ -85,7 +89,7 @@ void Flash::processEffect(FloatColor &color) {
                 this->startTime = micros();
             }
         } else {
-            color = FloatColor(0, 0, 0);
+            color = FloatColor();
 
             if(this->elapsedTime >= this->currentOffDuration) {
                 this->flashing = 1;

@@ -39,9 +39,11 @@ private:
 public:
     Fade(const LPD8806 strip);
 
-    void initializeEffect();
     void initializeEffect(const FloatColor &color, const uint8_t breath);
+    void initializeEffect(const FloatColor &color, const uint8_t fadeIn,
+      uint8_t breath);
     void setStartTime(const uint32_t currentTime);
+    void setFadeColor(const Color &color);
     void setSpeed(const float speed);
     void processEffect(FloatColor &color, const float deltaTime);
 };

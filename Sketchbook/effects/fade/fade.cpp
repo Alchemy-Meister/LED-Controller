@@ -10,15 +10,14 @@ Fade::Fade(const LPD8806 strip) : DynamicTimeBasedMultiHWEffect(strip) {
     this->currentOffDuration = Fade::offDuration;
 }
 
-void Fade::initializeEffect() {
-    // Sets fade in flag as FALSE.
-    this->fadeIn = 0;
+void Fade::initializeEffect(const FloatColor &color, uint8_t breath) {
+  this->initializeEffect(color, 0, breath);
 }
 
-void Fade::initializeEffect(const FloatColor &color, const uint8_t breath) {
-
-    Fade::initializeEffect();
-
+void Fade::initializeEffect(const FloatColor &color, const uint8_t fadeIn,
+  uint8_t breath)
+{
+    this->fadeIn = fadeIn;
     this->baseColor = FloatColor(color);
 
     // IF true activates breath flag and updates its speed.
@@ -38,6 +37,11 @@ void Fade::initializeEffect(const FloatColor &color, const uint8_t breath) {
 
 void Fade::setStartTime(const uint32_t currentTime) {
     this->startTime = currentTime;
+}
+
+void Fade::setFadeColor(const Color &color) {
+    this->baseColor = color;
+    this->calculateSpeed(color);
 }
 
 void Fade::setSpeed(const float speed) {
@@ -83,17 +87,17 @@ void Fade::processEffect(FloatColor &color, const float deltaTime) {
             if(this->multiLEDController) {
                 this->transition(color,
                     Color(
-                        LPD8806Effect::MAX_BRIGTHNESS,
-                        LPD8806Effect::MAX_BRIGTHNESS,
-                        LPD8806Effect::MAX_BRIGTHNESS
+                        this->baseColor.getRed(),
+                        this->baseColor.getGreen(),
+                        this->baseColor.getBlue()
                     ), deltaTime
                 );
             } else {
                 this->transition(color,
                     Color(
-                        RGBLedStrip::MAX_BRIGTHNESS,
-                        RGBLedStrip::MAX_BRIGTHNESS,
-                        RGBLedStrip::MAX_BRIGTHNESS
+                        this->baseColor.getRed(),
+                        this->baseColor.getGreen(),
+                        this->baseColor.getBlue()
                     ), deltaTime);
             }
 
@@ -106,9 +110,9 @@ void Fade::processEffect(FloatColor &color, const float deltaTime) {
             }
         } else {
             // Processes the FADE OUT effect part.
+            this->transition(color, Color(0, 0, 0), deltaTime);
 
             // Calculates new color subtraction after transition.
-            this->transition(color, Color(0, 0, 0), deltaTime);
 
             // IF elapsed time surpasses fade duration.
             if(this->elapsedTime >= this->currentFadeDuration) {
